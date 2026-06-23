@@ -16,9 +16,26 @@ Elle est conçue pour être utilisée hors-ligne ou sans serveur distant, les do
 
 ## 3. Architecture des Données
 
-Les données sont structurées en deux entités principales en mémoire et dans le `localStorage` :
+Les données sont structurées en trois entités principales en mémoire et dans le `localStorage` :
 
-### A. `type_ronde`
+### A. `tabOperateurs`
+
+Un tableau d'objets définissant les opérateurs.
+
+```json
+[
+  {
+    "id_operateur": "966",
+    "nom_operateur": "NADJOMBE",
+    "prenom_operateur": "Gbati",
+    "fonction_operateur": "Chef Service",
+    "nomuser_operateur": "gbati",
+    "motdepasse_operateur": "admin"
+  }
+]
+```
+
+### B. `type_ronde`
 
 Un tableau d'objets définissant les types de rondes possibles.
 
@@ -39,7 +56,7 @@ Un tableau d'objets définissant les types de rondes possibles.
 ]
 ```
 
-### B. `rondeDB` (anciennement `relevesDB`)
+### C. `rondeDB` (anciennement `relevesDB`)
 
 Un objet agissant comme un dictionnaire. Les clés sont les identifiants des compteurs (`eau`, `electricite`, `ddo`, etc.) et les valeurs sont des tableaux contenant les relevés.
 

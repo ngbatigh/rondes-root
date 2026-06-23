@@ -11,13 +11,13 @@ Ce fichier détaille le fonctionnement interne de l'application, les algorithmes
 ```mermaid
 graph TD
     A[Lancement de l'app / init] --> B{Existe-t-il des données dans localStorage?}
-    B -->|Oui| C[Chargement de type_ronde]
+    B -->|Oui| C[Chargement de type_ronde et tabOperateurs]
     C --> D[Chargement et Migration de rondeDB]
     D --> E[Suppression ancienne clé 'consommation']
     E --> F[Ajout id_ronde par défaut si manquant]
     B -->|Non| G[Appel à initDatabase]
-    G --> H[Création de type_ronde et rondeDB avec données test]
-    F --> I[Mise à jour DOM: fillRondeSelect]
+    G --> H[Création de type_ronde, tabOperateurs et rondeDB avec données test]
+    F --> I[Mise à jour DOM: fillRondeSelect et remplirOperateursSelect]
     H --> I
     I --> J[setupEventListeners: Attachement du submit au formulaire]
 ```
@@ -55,11 +55,13 @@ graph TD
 
 ## 3. Guide de Maintenance et Mise à Niveau (Upgrade)
 
-### Ajouter un nouvel Opérateur
+### Gérer les Opérateurs (via l'interface)
 
-1. Ouvrir `index.html`.
-2. Repérer le `<select id="operateur">`.
-3. Ajouter une nouvelle balise `<option value="Nom">Nom</option>`.
+Depuis l'application :
+
+1. Cliquer sur le bouton **☰** pour ouvrir le menu latéral.
+2. Cliquer sur **👥 Gestion des opérateurs**.
+3. Utiliser les sous-menus **➕ Ajouter opérateur**, **✏️ Modifier opérateur**, ou **🗑️ Supprimer opérateur**.
 
 ### Ajouter un nouveau Compteur
 
