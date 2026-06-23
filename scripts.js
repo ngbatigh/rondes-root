@@ -27,9 +27,8 @@ let type_ronde = [
 // Opérateurs
 let tabOperateurs = [];
 
-// Initialisation avec quelques données de test
-function initDatabase() {
-  // Initialisation de la table des opérateurs avec les données par défaut
+// Initialiser les opérateurs par défaut
+function initOperateurs() {
   tabOperateurs = [
     {
       id_operateur: "966",
@@ -57,6 +56,11 @@ function initDatabase() {
     },
   ];
   localStorage.setItem("tabOperateurs", JSON.stringify(tabOperateurs));
+}
+
+// Initialisation avec quelques données de test
+function initDatabase() {
+  initOperateurs();
 
   const now = new Date();
   const yesterday = new Date(now);
@@ -631,6 +635,9 @@ function loadSavedData() {
 
   if (savedTabOperateurs) {
     tabOperateurs = JSON.parse(savedTabOperateurs);
+  } else {
+    // Initialiser les opérateurs par défaut si absents du localStorage
+    initOperateurs();
   }
 
   if (savedRondeDB) {

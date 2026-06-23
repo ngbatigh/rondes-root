@@ -54,7 +54,3 @@ Cette vérification s'applique aussi bien pour l'ajout que pour la modification 
 - **`scripts.js`** : Ajouter `tabOperateurs`, les fonctions CRUD, mettre à jour `initDatabase()` et `loadSavedData()`
 - **`index.html`** : Remplacer le `<select id="operateur">` statique par un select dynamique + ajouter les 3 panneaux de gestion des opérateurs
 - **`styles.css`** : Réutiliser les classes existantes
-
----
-
-Ce plan vous convient-il ? Si oui, basculez en **ACT MODE** pour que je l'implémente.

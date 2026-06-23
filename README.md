@@ -5,6 +5,7 @@ Une application web légère et hors-ligne permettant aux opérateurs de saisir 
 ## 🚀 Fonctionnalités
 
 - **Saisie rapide** : Formulaire optimisé pour saisir les relevés à la chaîne sans avoir à resélectionner l'opérateur ou le type de ronde à chaque fois.
+- **Gestion des opérateurs** : Ajouter, modifier ou supprimer des opérateurs avec vérification d'unicité du matricule.
 - **Gestion des Types de Rondes** : Prise en compte des différentes tournées (Relevé journalier, Relevé de quart, etc.).
 - **Mode 100% Hors-ligne** : Toutes les données saisies sont sauvegardées directement dans le navigateur (`localStorage`). Aucune connexion internet n'est requise.
 - **Horodatage automatique** : La date et l'heure du système sont automatiquement jointes au relevé de manière transparente.
