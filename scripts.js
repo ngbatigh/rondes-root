@@ -10,17 +10,18 @@ let rondeDB = {
 // Types de rondes
 let type_ronde = [
   {
-    id_ronde: 0,
+    id_type_ronde: 0,
     ronde: "Relevé journalier",
     delai: "1440",
-    description_ronde:
+    description_type_ronde:
       "relevé de tous les compteurs chaque matin aux alentours de 06:00",
   },
   {
-    id_ronde: 1,
+    id_type_ronde: 1,
     ronde: "Relevé de quart",
     delai: "480",
-    description_ronde: "relevé de tous les compteurs chaque quart de 8 heures",
+    description_type_ronde:
+      "relevé de tous les compteurs chaque quart de 8 heures",
   },
 ];
 
@@ -101,7 +102,7 @@ function fillRondeSelect() {
   select.innerHTML = '<option value="">Sélectionner une ronde</option>';
   type_ronde.forEach((r) => {
     const option = document.createElement("option");
-    option.value = r.id_ronde;
+    option.value = r.id_type_ronde;
     option.textContent = r.ronde;
     select.appendChild(option);
   });
@@ -249,13 +250,15 @@ function ajouterRonde() {
 
   // Calculer le prochain id
   const maxId =
-    type_ronde.length > 0 ? Math.max(...type_ronde.map((r) => r.id_ronde)) : -1;
+    type_ronde.length > 0
+      ? Math.max(...type_ronde.map((r) => r.id_type_ronde))
+      : -1;
 
   const nouvelleRonde = {
-    id_ronde: maxId + 1,
+    id_type_ronde: maxId + 1,
     ronde: nom,
     delai: delai,
-    description_ronde: description || "",
+    description_type_ronde: description || "",
   };
 
   type_ronde.push(nouvelleRonde);
@@ -291,12 +294,12 @@ function renderRondesCheckList() {
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
-    checkbox.id = `check-${r.id_ronde}`;
-    checkbox.value = r.id_ronde;
+    checkbox.id = `check-${r.id_type_ronde}`;
+    checkbox.value = r.id_type_ronde;
 
     const label = document.createElement("label");
-    label.htmlFor = `check-${r.id_ronde}`;
-    label.innerHTML = `${r.ronde} <small>(Délai: ${r.delai} min — ${r.description_ronde})</small>`;
+    label.htmlFor = `check-${r.id_type_ronde}`;
+    label.innerHTML = `${r.ronde} <small>(Délai: ${r.delai} min — ${r.description_type_ronde})</small>`;
 
     div.appendChild(checkbox);
     div.appendChild(label);
@@ -319,13 +322,13 @@ function supprimerRondesSelection() {
   checkboxes.forEach((cb) => idsToDelete.push(parseInt(cb.value)));
 
   const noms = type_ronde
-    .filter((r) => idsToDelete.includes(r.id_ronde))
+    .filter((r) => idsToDelete.includes(r.id_type_ronde))
     .map((r) => r.ronde);
 
   if (!confirm(`Supprimer ${noms.length} ronde(s) :\n${noms.join(", ")} ?`))
     return;
 
-  type_ronde = type_ronde.filter((r) => !idsToDelete.includes(r.id_ronde));
+  type_ronde = type_ronde.filter((r) => !idsToDelete.includes(r.id_type_ronde));
 
   // Sauvegarder
   localStorage.setItem("type_ronde", JSON.stringify(type_ronde));

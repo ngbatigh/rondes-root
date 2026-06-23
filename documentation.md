@@ -14,7 +14,7 @@ graph TD
     B -->|Oui| C[Chargement de type_ronde]
     C --> D[Chargement et Migration de rondeDB]
     D --> E[Suppression ancienne clé 'consommation']
-    E --> F[Ajout id_ronde par défaut si manquant]
+    E --> F[Ajout id_ronde par défaut si manquant dans rondeDB]
     B -->|Non| G[Appel à initDatabase]
     G --> H[Création de type_ronde et rondeDB avec données test]
     F --> I[Mise à jour DOM: fillRondeSelect]

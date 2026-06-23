@@ -59,16 +59,16 @@ Un tableau d'objets définissant les types de rondes possibles.
 ```json
 [
   {
-    "id_ronde": 0,
+    "id_type_ronde": 0,
     "ronde": "Relevé journalier",
     "delai": "1440",
-    "description_ronde": "relevé de tous les compteurs chaque matin aux alentours de 06:00"
+    "description_type_ronde": "relevé de tous les compteurs chaque matin aux alentours de 06:00"
   },
   {
-    "id_ronde": 1,
+    "id_type_ronde": 1,
     "ronde": "Relevé de quart",
     "delai": "480",
-    "description_ronde": "relevé de tous les compteurs chaque quart de 8 heures"
+    "description_type_ronde": "relevé de tous les compteurs chaque quart de 8 heures"
   }
 ]
 ```
