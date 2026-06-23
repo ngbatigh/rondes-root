@@ -34,6 +34,296 @@
       </header>
 
       <main>
+        <!-- ==================== Écran d'accueil Gestion des Compteurs ==================== -->
+        <div id="gestionCompteursMenu" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromCompteursMenu">←</button>
+            <h2>🔢 Gestion des compteurs</h2>
+          </div>
+          <div class="menu-cards">
+            <button class="menu-card" id="goToActiverCompteur">
+              <span class="menu-card-icon">✅</span>
+              <span class="menu-card-text">Activer compteur</span>
+            </button>
+            <button class="menu-card" id="goToModifierCompteur">
+              <span class="menu-card-icon">✏️</span>
+              <span class="menu-card-text">Modifier compteur</span>
+            </button>
+            <button class="menu-card" id="goToClonerCompteur">
+              <span class="menu-card-icon">📋</span>
+              <span class="menu-card-text">Cloner compteur</span>
+            </button>
+            <button class="menu-card" id="goToCreerCompteur">
+              <span class="menu-card-icon">➕</span>
+              <span class="menu-card-text">Créer compteur</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== Panneau Activer compteur ==================== -->
+        <div id="activerCompteurPanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromActiver">←</button>
+            <h2>✅ Activer compteur</h2>
+          </div>
+          <div id="activerCheckList"></div>
+          <button id="enregistrerActiverBtn">
+            💾 Enregistrer les modifications
+          </button>
+        </div>
+
+        <!-- ==================== Panneau Modifier compteur ==================== -->
+        <div id="modifierCompteurPanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromModifier">←</button>
+            <h2>✏️ Modifier compteur</h2>
+          </div>
+          <div class="form-group">
+            <label for="modifierSelectCompteur"
+              >Sélectionner un compteur :</label
+            >
+            <select id="modifierSelectCompteur">
+              <option value="">Choisir...</option>
+            </select>
+          </div>
+          <div id="modifierFormContainer" style="display: none">
+            <div class="form-group">
+              <label>ID compteur (lecture seule) :</label>
+              <input type="text" id="modifierIdCompteur" readonly />
+            </div>
+            <div class="form-group">
+              <label for="modifierNom">Nom compteur :</label>
+              <input type="text" id="modifierNom" />
+            </div>
+            <div class="form-group">
+              <label for="modifierUnite">Unité :</label>
+              <input type="text" id="modifierUnite" />
+            </div>
+            <div class="form-group">
+              <label for="modifierDebut">Début compteur :</label>
+              <input type="number" id="modifierDebut" step="any" />
+            </div>
+            <div class="form-group">
+              <label for="modifierRange">Range compteur :</label>
+              <input type="number" id="modifierRange" step="any" />
+            </div>
+            <div class="form-group">
+              <label for="modifierSection">Section :</label>
+              <select id="modifierSection"></select>
+            </div>
+            <div class="form-group">
+              <label for="modifierFamille">Famille :</label>
+              <select id="modifierFamille"></select>
+            </div>
+            <div class="form-group">
+              <label for="modifierGroupe1">Groupe 1 :</label>
+              <select id="modifierGroupe1"></select>
+            </div>
+            <div class="form-group">
+              <label for="modifierGroupe2">Groupe 2 :</label>
+              <select id="modifierGroupe2"></select>
+            </div>
+            <div class="form-group">
+              <label for="modifierDescription">Description :</label>
+              <input type="text" id="modifierDescription" />
+            </div>
+            <div class="form-group checkbox-group">
+              <label>
+                <input type="checkbox" id="modifierVisible" />
+                👁️ Visible
+              </label>
+            </div>
+            <div class="form-group checkbox-group">
+              <label>
+                <input type="checkbox" id="modifierActif" />
+                ✅ Actif
+              </label>
+            </div>
+            <div class="btn-row">
+              <button class="btn-secondary" id="annulerModifier">
+                ❌ Annuler
+              </button>
+              <button id="enregistrerModifierBtn">💾 Enregistrer</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== Panneau Cloner compteur ==================== -->
+        <div id="clonerCompteurPanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromCloner">←</button>
+            <h2>📋 Cloner compteur</h2>
+          </div>
+          <div class="form-group">
+            <label for="clonerSelectParent">Compteur parent à cloner :</label>
+            <select id="clonerSelectParent">
+              <option value="">Choisir...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="clonerNouvelId">Nouvel ID compteur :</label>
+            <input
+              type="text"
+              id="clonerNouvelId"
+              placeholder="Ex: A-XXXX-XXXX-XXXX-XXXX"
+            />
+          </div>
+          <div id="clonerApercu" style="display: none">
+            <hr />
+            <h3>Aperçu du clone</h3>
+            <div
+              id="clonerApercuContent"
+              style="
+                background: #f8f9fa;
+                padding: 12px;
+                border-radius: 8px;
+                font-size: 13px;
+                color: #333;
+                white-space: pre-wrap;
+              "
+            ></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn-secondary" id="annulerCloner">❌ Annuler</button>
+            <button id="executerClonerBtn">📋 Cloner</button>
+          </div>
+        </div>
+
+        <!-- ==================== Panneau Créer compteur ==================== -->
+        <div id="creerCompteurPanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromCreer">←</button>
+            <h2>➕ Créer compteur</h2>
+          </div>
+          <div class="form-group">
+            <label for="creerIdCompteur">ID compteur :</label>
+            <input
+              type="text"
+              id="creerIdCompteur"
+              placeholder="Ex: A-XXXX-XXXX-XXXX-XXXX"
+            />
+          </div>
+          <div class="form-group">
+            <label for="creerNom">Nom compteur :</label>
+            <input type="text" id="creerNom" />
+          </div>
+          <div class="form-group">
+            <label for="creerUnite">Unité :</label>
+            <input type="text" id="creerUnite" />
+          </div>
+          <div class="form-group">
+            <label for="creerDebut">Début compteur :</label>
+            <input type="number" id="creerDebut" step="any" />
+          </div>
+          <div class="form-group">
+            <label for="creerRange">Range compteur :</label>
+            <input type="number" id="creerRange" step="any" />
+          </div>
+          <div class="form-group">
+            <label for="creerSection">Section :</label>
+            <select id="creerSection"></select>
+          </div>
+          <div class="form-group">
+            <label for="creerFamille">Famille :</label>
+            <select id="creerFamille"></select>
+          </div>
+          <div class="form-group">
+            <label for="creerGroupe1">Groupe 1 :</label>
+            <select id="creerGroupe1"></select>
+          </div>
+          <div class="form-group">
+            <label for="creerGroupe2">Groupe 2 :</label>
+            <select id="creerGroupe2"></select>
+          </div>
+          <div class="form-group">
+            <label for="creerDescription">Description :</label>
+            <input type="text" id="creerDescription" />
+          </div>
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" id="creerVisible" checked />
+              👁️ Visible
+            </label>
+          </div>
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" id="creerActif" checked />
+              ✅ Actif
+            </label>
+          </div>
+          <div class="btn-row">
+            <button class="btn-secondary" id="annulerCreer">❌ Annuler</button>
+            <button id="executerCreerBtn">✅ Créer</button>
+          </div>
+        </div>
+
+        <!-- ==================== Écran d'accueil Gestion des Rondes ==================== -->
+        <div id="gestionRondesMenu" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromRondesMenu">←</button>
+            <h2>🔄 Gestion des Rondes</h2>
+          </div>
+          <div class="menu-cards">
+            <button class="menu-card" id="goToAjouterRonde">
+              <span class="menu-card-icon">➕</span>
+              <span class="menu-card-text">Ajouter type de ronde</span>
+            </button>
+            <button class="menu-card" id="goToSupprimerRonde">
+              <span class="menu-card-icon">🗑️</span>
+              <span class="menu-card-text">Supprimer type de ronde</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== Panneau Ajouter type de ronde ==================== -->
+        <div id="ajouterRondePanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromAjouter">←</button>
+            <h2>➕ Ajouter type de ronde</h2>
+          </div>
+          <div class="form-group">
+            <label for="nouvelleRondeNom">Nom de la ronde :</label>
+            <input
+              type="text"
+              id="nouvelleRondeNom"
+              placeholder="Ex: Relevé hebdomadaire"
+            />
+          </div>
+          <div class="form-group">
+            <label for="nouvelleRondeDelai">Délai (minutes) :</label>
+            <input
+              type="number"
+              id="nouvelleRondeDelai"
+              placeholder="Ex: 10080"
+            />
+          </div>
+          <div class="form-group">
+            <label for="nouvelleRondeDescription">Description :</label>
+            <input
+              type="text"
+              id="nouvelleRondeDescription"
+              placeholder="Ex: relevé du lundi matin"
+            />
+          </div>
+          <div class="btn-row">
+            <button class="btn-secondary" id="annulerAjouter">
+              ❌ Annuler
+            </button>
+            <button id="ajouterRondeBtn">✅ Ajouter</button>
+          </div>
+        </div>
+
+        <!-- ==================== Panneau Supprimer type de ronde ==================== -->
+        <div id="supprimerRondePanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromSupprimer">←</button>
+            <h2>🗑️ Supprimer type de ronde</h2>
+          </div>
+          <div id="rondesCheckList"></div>
+          <button id="supprimerRondesBtn">🗑️ Supprimer la sélection</button>
+        </div>
+
+        <!-- ==================== Formulaire de relevé ==================== -->
         <form id="releveForm">
           <div class="form-group">
             <label for="operateur">Opérateur :</label>
@@ -56,11 +346,6 @@
             <label for="compteur">Compteur :</label>
             <select id="compteur" name="compteur" required>
               <option value="">Sélectionner un compteur</option>
-              <option value="eau">Eau (m³)</option>
-              <option value="electricite">Électricité (kWh)</option>
-              <option value="ddo">DDO (m³)</option>
-              <option value="produit">Produit (hl)</option>
-              <option value="temp">Temp (min)</option>
             </select>
           </div>
 
