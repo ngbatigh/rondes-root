@@ -195,3 +195,45 @@ Ce plan révisé vous convient-il ? Je peux le mettre en œuvre dès que vous ba
 ---
 
 ## prevoir une gestion de l'affichage de l'id_compteurs dans les listes sur option
+
+## Plan : Vérification unicité `id_compteur` avant création/modification
+
+### Contexte
+
+Le plan de travail actuel (branche `gestion-compteurs`) demande de vérifier l'unicité de `id_compteur` avant toute création ou modification de compteur. Les fonctions `creerCompteur()` et `enregistrerModification()` contiennent déjà cette vérification, mais je dois m'assurer qu'elle est correcte et la renforcer si nécessaire.
+
+### Vérifications à effectuer dans `scripts.js`
+
+#### 1. Fonction `creerCompteur()` (ligne ~844)
+
+Vérifier que le code contient déjà :
+
+```javascript
+if (tabCompteurs.find((c) => c.id_compteur === id)) {
+  showMessage("Cet ID existe déjà.", "error");
+  return;
+}
+```
+
+✅ Cette vérification est déjà présente.
+
+#### 2. Fonction `enregistrerModification()` (ligne ~737)
+
+Vérifier que lors de la modification, si l'utilisateur change l'ID, on vérifie que le nouvel ID n'existe pas déjà (s'il est différent de l'original).
+
+Actuellement, le code ne vérifie pas cela. Je dois ajouter :
+
+```javascript
+const originalId = id;
+const newId = document.getElementById("modifierIdCompteur").value;
+if (newId !== originalId && tabCompteurs.find((c) => c.id_compteur === newId)) {
+  showMessage("Cet ID existe déjà.", "error");
+  return;
+}
+```
+
+### Fichier à modifier
+
+- **`scripts.js`** : Renforcer la vérification dans `enregistrerModification()`
+
+Basculez en **ACT MODE** pour que j'applique cette vérification.

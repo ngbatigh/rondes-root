@@ -898,6 +898,15 @@ function enregistrerModification() {
   const c = tabCompteurs.find((x) => x.id_compteur === id);
   if (!c) return;
 
+  const newId = document.getElementById("modifierIdCompteur").value.trim();
+
+  // Vérification unicité du nouvel ID (seulement si l'ID a été modifié)
+  if (newId !== id && tabCompteurs.find((x) => x.id_compteur === newId)) {
+    showMessage("Cet ID existe déjà.", "error");
+    return;
+  }
+
+  c.id_compteur = newId;
   c.nom_compteur = document.getElementById("modifierNom").value;
   c.unite_compteur = document.getElementById("modifierUnite").value;
   c.debut_compteur = parseFloat(document.getElementById("modifierDebut").value);
@@ -921,7 +930,7 @@ function enregistrerModification() {
   localStorage.setItem("tabCompteurs", JSON.stringify(tabCompteurs));
   fillCompteurSelect();
   remplirSelectModifier();
-  showMessage(`Compteur "${id}" modifié.`);
+  showMessage(`Compteur "${newId}" modifié.`);
 }
 
 // ----- Cloner compteur -----
