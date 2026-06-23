@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestion des Relevés de Compteurs</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>📊 Relevés de Compteurs</h1>
+      </header>
+
+      <main>
+        <form id="releveForm">
+          <div class="form-group">
+            <label for="operateur">Opérateur :</label>
+            <select id="operateur" name="operateur" required>
+              <option value="">Sélectionner un opérateur</option>
+              <option value="Koffi">Koffi</option>
+              <option value="Gbati">Gbati</option>
+              <option value="Abalo">Abalo</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="id_ronde">Type de ronde :</label>
+            <select id="id_ronde" name="id_ronde" required>
+              <option value="">Sélectionner une ronde</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="compteur">Compteur :</label>
+            <select id="compteur" name="compteur" required>
+              <option value="">Sélectionner un compteur</option>
+              <option value="eau">Eau (m³)</option>
+              <option value="electricite">Électricité (kWh)</option>
+              <option value="ddo">DDO (m³)</option>
+              <option value="produit">Produit (hl)</option>
+              <option value="temp">Temp (min)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="valeurActuelle">Valeur actuelle :</label>
+            <input
+              type="number"
+              id="valeurActuelle"
+              name="valeurActuelle"
+              step="any"
+              required
+            />
+          </div>
+
+          <button type="submit" id="submitBtn">Valider la saisie</button>
+        </form>
+
+        <div id="message" class="message"></div>
+      </main>
+    </div>
+
+    <script src="scripts.js"></script>
+  </body>
+</html>
