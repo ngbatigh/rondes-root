@@ -34,17 +34,30 @@
       </header>
 
       <main>
-        <div id="gestionRondes" class="panel" style="display: none">
+        <!-- Écran d'accueil Gestion des Rondes -->
+        <div id="gestionRondesMenu" class="panel" style="display: none">
           <div class="panel-header">
-            <button class="back-btn" id="backToReleve">←</button>
-            <h2>🔄 Gestion des types de rondes</h2>
+            <button class="back-btn" id="backFromRondesMenu">←</button>
+            <h2>🔄 Gestion des Rondes</h2>
           </div>
+          <div class="menu-cards">
+            <button class="menu-card" id="goToAjouterRonde">
+              <span class="menu-card-icon">➕</span>
+              <span class="menu-card-text">Ajouter type de ronde</span>
+            </button>
+            <button class="menu-card" id="goToSupprimerRonde">
+              <span class="menu-card-icon">🗑️</span>
+              <span class="menu-card-text">Supprimer type de ronde</span>
+            </button>
+          </div>
+        </div>
 
-          <div id="rondesList"></div>
-
-          <hr />
-
-          <h3>Ajouter une nouvelle ronde</h3>
+        <!-- Panneau Ajouter type de ronde -->
+        <div id="ajouterRondePanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromAjouter">←</button>
+            <h2>➕ Ajouter type de ronde</h2>
+          </div>
 
           <div class="form-group">
             <label for="nouvelleRondeNom">Nom de la ronde :</label>
@@ -73,7 +86,24 @@
             />
           </div>
 
-          <button id="ajouterRondeBtn">➕ Ajouter la ronde</button>
+          <div class="btn-row">
+            <button class="btn-secondary" id="annulerAjouter">
+              ❌ Annuler
+            </button>
+            <button id="ajouterRondeBtn">✅ Ajouter</button>
+          </div>
+        </div>
+
+        <!-- Panneau Supprimer type de ronde -->
+        <div id="supprimerRondePanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromSupprimer">←</button>
+            <h2>🗑️ Supprimer type de ronde</h2>
+          </div>
+
+          <div id="rondesCheckList"></div>
+
+          <button id="supprimerRondesBtn">🗑️ Supprimer la sélection</button>
         </div>
 
         <form id="releveForm">

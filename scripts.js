@@ -180,7 +180,7 @@ function setupSidebar() {
       closeSidebar();
 
       if (action === "rondes") {
-        showPanel("gestionRondes");
+        showPanel("gestionRondesMenu");
       } else {
         // Pour tous les autres, retour au formulaire de relevé
         showPanel("releveForm");
@@ -206,54 +206,30 @@ function setupSidebar() {
   });
 }
 
-// Afficher un panneau et masquer le formulaire de relevé (ou l'inverse)
+// Afficher un panneau et masquer les autres
 function showPanel(panelId) {
   const form = document.getElementById("releveForm");
-  const gestionRondes = document.getElementById("gestionRondes");
+  const menu = document.getElementById("gestionRondesMenu");
+  const ajouter = document.getElementById("ajouterRondePanel");
+  const supprimer = document.getElementById("supprimerRondePanel");
 
-  if (panelId === "gestionRondes") {
-    form.style.display = "none";
-    gestionRondes.style.display = "block";
-    renderRondesList();
+  // Masquer tous les panneaux
+  form.style.display = "none";
+  menu.style.display = "none";
+  ajouter.style.display = "none";
+  supprimer.style.display = "none";
+
+  // Afficher le panneau demandé
+  if (panelId === "gestionRondesMenu") {
+    menu.style.display = "block";
+  } else if (panelId === "ajouterRondePanel") {
+    ajouter.style.display = "block";
+  } else if (panelId === "supprimerRondePanel") {
+    supprimer.style.display = "block";
+    renderRondesCheckList();
   } else {
-    gestionRondes.style.display = "none";
     form.style.display = "block";
   }
-}
-
-// Afficher la liste des types de rondes
-function renderRondesList() {
-  const container = document.getElementById("rondesList");
-  container.innerHTML = "";
-
-  if (type_ronde.length === 0) {
-    container.innerHTML =
-      '<p style="color: #666; font-style: italic; text-align: center; padding: 20px;">Aucune ronde définie.</p>';
-    return;
-  }
-
-  type_ronde.forEach((r) => {
-    const div = document.createElement("div");
-    div.className = "ronde-item";
-
-    div.innerHTML = `
-      <div class="ronde-info">
-        <strong>${r.ronde}</strong>
-        <span>Délai : ${r.delai} min — ${r.description_ronde}</span>
-      </div>
-      <button class="delete-ronde-btn" data-id="${r.id_ronde}">✕</button>
-    `;
-
-    container.appendChild(div);
-  });
-
-  // Écouter les clics sur les boutons supprimer
-  document.querySelectorAll(".delete-ronde-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const id = parseInt(btn.dataset.id);
-      deleteRonde(id);
-    });
-  });
 }
 
 // Ajouter une nouvelle ronde
@@ -287,8 +263,7 @@ function ajouterRonde() {
   // Sauvegarder
   localStorage.setItem("type_ronde", JSON.stringify(type_ronde));
 
-  // Mettre à jour l'affichage
-  renderRondesList();
+  // Mettre à jour le select du formulaire
   fillRondeSelect();
 
   // Réinitialiser les champs
@@ -299,33 +274,110 @@ function ajouterRonde() {
   showMessage(`Ronde "${nom}" ajoutée avec succès !`);
 }
 
-// Supprimer une ronde
-function deleteRonde(id) {
-  const ronde = type_ronde.find((r) => r.id_ronde === id);
-  if (!ronde) return;
+// Afficher la liste avec cases à cocher
+function renderRondesCheckList() {
+  const container = document.getElementById("rondesCheckList");
+  container.innerHTML = "";
 
-  if (!confirm(`Supprimer la ronde "${ronde.ronde}" ?`)) return;
+  if (type_ronde.length === 0) {
+    container.innerHTML =
+      '<p style="color: #666; font-style: italic; text-align: center; padding: 20px;">Aucune ronde à supprimer.</p>';
+    return;
+  }
 
-  type_ronde = type_ronde.filter((r) => r.id_ronde !== id);
+  type_ronde.forEach((r) => {
+    const div = document.createElement("div");
+    div.className = "check-item";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = `check-${r.id_ronde}`;
+    checkbox.value = r.id_ronde;
+
+    const label = document.createElement("label");
+    label.htmlFor = `check-${r.id_ronde}`;
+    label.innerHTML = `${r.ronde} <small>(Délai: ${r.delai} min — ${r.description_ronde})</small>`;
+
+    div.appendChild(checkbox);
+    div.appendChild(label);
+    container.appendChild(div);
+  });
+}
+
+// Supprimer les rondes sélectionnées
+function supprimerRondesSelection() {
+  const checkboxes = document.querySelectorAll(
+    "#rondesCheckList input[type='checkbox']:checked",
+  );
+
+  if (checkboxes.length === 0) {
+    showMessage("Veuillez sélectionner au moins une ronde", "error");
+    return;
+  }
+
+  const idsToDelete = [];
+  checkboxes.forEach((cb) => idsToDelete.push(parseInt(cb.value)));
+
+  const noms = type_ronde
+    .filter((r) => idsToDelete.includes(r.id_ronde))
+    .map((r) => r.ronde);
+
+  if (!confirm(`Supprimer ${noms.length} ronde(s) :\n${noms.join(", ")} ?`))
+    return;
+
+  type_ronde = type_ronde.filter((r) => !idsToDelete.includes(r.id_ronde));
 
   // Sauvegarder
   localStorage.setItem("type_ronde", JSON.stringify(type_ronde));
 
   // Mettre à jour
-  renderRondesList();
+  renderRondesCheckList();
   fillRondeSelect();
 
-  showMessage(`Ronde "${ronde.ronde}" supprimée.`);
+  showMessage(`${noms.length} ronde(s) supprimée(s).`);
 }
 
-// Configuration du panneau de gestion des rondes
+// Configuration des panneaux de gestion des rondes
 function setupGestionRondes() {
+  // Navigation : menu → ajouter
+  document.getElementById("goToAjouterRonde").addEventListener("click", () => {
+    showPanel("ajouterRondePanel");
+  });
+
+  // Navigation : menu → supprimer
+  document
+    .getElementById("goToSupprimerRonde")
+    .addEventListener("click", () => {
+      showPanel("supprimerRondePanel");
+    });
+
+  // Boutons retour ←
+  document
+    .getElementById("backFromRondesMenu")
+    .addEventListener("click", () => {
+      showPanel("releveForm");
+    });
+  document.getElementById("backFromAjouter").addEventListener("click", () => {
+    showPanel("gestionRondesMenu");
+  });
+  document.getElementById("backFromSupprimer").addEventListener("click", () => {
+    showPanel("gestionRondesMenu");
+  });
+
+  // Annuler dans Ajouter
+  document.getElementById("annulerAjouter").addEventListener("click", () => {
+    showPanel("gestionRondesMenu");
+  });
+
+  // Ajouter une ronde
   document
     .getElementById("ajouterRondeBtn")
     .addEventListener("click", ajouterRonde);
-  document.getElementById("backToReleve").addEventListener("click", () => {
-    showPanel("releveForm");
-  });
+
+  // Supprimer la sélection
+  document
+    .getElementById("supprimerRondesBtn")
+    .addEventListener("click", supprimerRondesSelection);
 }
 
 // Gestionnaire de soumission du formulaire

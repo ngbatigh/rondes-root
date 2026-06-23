@@ -69,3 +69,7 @@ Deux entités sont sauvegardées automatiquement après chaque relevé :
 - **Données de test** : si localStorage est vide, `initDatabase()` crée 5 relevés (un par compteur) datés de la veille
 - **Nettoyage automatique** : au chargement, les anciens champs `consommation` sont supprimés des relevés
 - **Types de rondes** : stockés séparément mais **non gérables** depuis l'interface utilisateur actuellement
+
+
+
+# important: prevoir une validation de confirmation avant toute supression ou ajout de donnee

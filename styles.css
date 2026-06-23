@@ -259,7 +259,7 @@ header {
   display: block;
 }
 
-/* Panneau de gestion des rondes */
+/* Panneaux de gestion des rondes */
 .panel {
   background: white;
   border-radius: 10px;
@@ -296,64 +296,93 @@ header {
   background: #f0f0ff;
 }
 
-#rondesList {
-  margin-bottom: 20px;
+/* Cartes du menu d'accueil */
+.menu-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 10px;
 }
 
-.ronde-item {
+.menu-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
+  gap: 16px;
+  padding: 20px;
+  background: #f8f9fa;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.menu-card:hover {
+  border-color: #667eea;
+  background: #f0f0ff;
+  transform: translateY(-2px);
+}
+
+.menu-card-icon {
+  font-size: 28px;
+}
+
+.menu-card-text {
+  font-size: 17px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Boutons en ligne */
+.btn-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.btn-row button {
+  flex: 1;
+}
+
+.btn-secondary {
+  background: #e0e0e0 !important;
+  color: #333 !important;
+}
+
+.btn-secondary:hover {
+  background: #ccc !important;
+}
+
+/* Liste avec cases à cocher */
+.check-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
   margin-bottom: 8px;
   background: #f8f9fa;
   border-radius: 8px;
   border-left: 4px solid #667eea;
+  gap: 12px;
 }
 
-.ronde-info {
-  flex: 1;
-}
-
-.ronde-info strong {
-  display: block;
-  font-size: 16px;
-  color: #333;
-}
-
-.ronde-info span {
-  display: block;
-  font-size: 13px;
-  color: #666;
-  margin-top: 4px;
-}
-
-.delete-ronde-btn {
-  background: #fee;
-  border: none;
-  color: #c00;
-  font-size: 18px;
+.check-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
   cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 6px;
-  width: auto;
-  transition: background 0.2s;
+  flex-shrink: 0;
 }
 
-.delete-ronde-btn:hover {
-  background: #fcc;
+.check-item label {
+  cursor: pointer;
+  flex: 1;
+  margin: 0;
+  font-weight: 500;
 }
 
-hr {
-  border: none;
-  border-top: 1px solid #e0e0e0;
-  margin: 20px 0;
-}
-
-#gestionRondes h3 {
-  font-size: 18px;
-  color: #333;
-  margin-bottom: 15px;
+.check-item label small {
+  font-weight: 400;
+  color: #666;
 }
 
 @media (max-width: 768px) {
