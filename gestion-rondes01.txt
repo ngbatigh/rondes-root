@@ -1,0 +1,71 @@
+## Synthèse : Gestion des données des rondes
+
+### 1. Stockage — `localStorage` du navigateur
+
+Deux entités sont sauvegardées automatiquement après chaque relevé :
+
+| Clé `localStorage` | Type                     | Description                             |
+|--------------------|--------------------------|-----------------------------------------|
+| `type_ronde`       | `Array`                  | Définit les types de rondes possibles   |
+| `rondeDB`          | `Object` (dictionnaire)  | Stocke tous les relevés par compteur    |
+
+---
+
+### 2. Structure des données
+
+#### `type_ronde` (initialisé en dur dans `scripts.js`)
+```json
+[
+  { "id_ronde": 0, "ronde": "Relevé journalier", "delai": "1440", "description_ronde": "..." },
+  { "id_ronde": 1, "ronde": "Relevé de quart",   "delai": "480",  "description_ronde": "..." }
+]
+```
+> ⚠ Ce tableau est modifiable en localStorage mais pas via l'interface actuelle (aucun formulaire de gestion des rondes).
+
+#### `rondeDB` (ex-`relevesDB`)
+```json
+{
+  "eau": [
+    { "id_ronde": 0, "id_operateur": "Koffi", "id_compteur": "eau", "valeur": 1250, "date": "2026-06-23", "heure": "06:30", "commentaire": "" }
+  ],
+  "electricite": [ ... ],
+  "ddo": [ ... ],
+  "produit": [ ... ],
+  "temp": [ ... ]
+}
+```
+
+---
+
+### 3. Cycle de vie d'un relevé
+
+```
+1. Utilisateur remplit le formulaire
+   → Sélectionne : Opérateur + Type de ronde + Compteur + Valeur
+
+2. Clic sur "Valider la saisie"
+   → saveReleve() est appelée
+   → Génération automatique : date du jour + heure système
+   → Nouvel objet relevé poussé dans rondeDB[compteur]
+   → Sauvegarde dans localStorage
+
+3. Message de confirmation affiché 3 secondes
+```
+
+---
+
+### 4. Logique métier actuelle
+
+- **Pas de calcul de consommation** — la collecte est brute
+- **Pas de blocage** — aucune comparaison avec un relevé antérieur
+- **Aucune modification/suppression** possible via l'interface
+- **Horodatage système** — date et heure ajoutées automatiquement
+
+---
+
+### 5. Points importants
+
+- **Persistance** : les données survivent à la fermeture du navigateur (localStorage)
+- **Données de test** : si localStorage est vide, `initDatabase()` crée 5 relevés (un par compteur) datés de la veille
+- **Nettoyage automatique** : au chargement, les anciens champs `consommation` sont supprimés des relevés
+- **Types de rondes** : stockés séparément mais **non gérables** depuis l'interface utilisateur actuellement
