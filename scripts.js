@@ -1167,9 +1167,14 @@ function setupGestionCompteurs() {
       qr.make();
 
       const moduleCount = qr.getModuleCount();
-      const moduleSize = 6;
+      const moduleSize = 20;
       const size = moduleCount * moduleSize;
-      let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`;
+
+      // Calculer la taille physique pour impression 300 DPI (1px = 0.254mm à 96 DPI)
+      // Pour impression haute résolution, on garde les pixels mais on peut aussi indiquer la taille en mm
+      const widthMm = ((size * 25.4) / 96).toFixed(1);
+
+      let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="width: ${widthMm}mm; height: ${widthMm}mm; shape-rendering: crispEdges;">`;
       svg += `<rect width="${size}" height="${size}" fill="white"/>`;
       for (let row = 0; row < moduleCount; row++) {
         for (let col = 0; col < moduleCount; col++) {
