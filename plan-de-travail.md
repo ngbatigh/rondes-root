@@ -237,3 +237,81 @@ if (newId !== originalId && tabCompteurs.find((c) => c.id_compteur === newId)) {
 - **`scripts.js`** : Renforcer la vérification dans `enregistrerModification()`
 
 Basculez en **ACT MODE** pour que j'applique cette vérification.
+
+## Plan : Ajout d'un sous-menu "Créer QR Code"
+
+### Fichiers à modifier
+
+#### 1. `index.html`
+
+**A. Menu Gestion des compteurs** : Ajouter une carte QR Code dans les `menu-cards` :
+
+```html
+<button class="menu-card" id="goToQrCodeCompteur">
+  <span class="menu-card-icon">📱</span>
+  <span class="menu-card-text">Créer QR Code</span>
+</button>
+```
+
+**B. Nouveau panneau QR Code** (après le panneau Créer compteur) :
+
+```html
+<div id="qrCodeCompteurPanel" class="panel" style="display: none">
+  <div class="panel-header">
+    <button class="back-btn" id="backFromQrCode">←</button>
+    <h2>📱 Créer QR Code</h2>
+  </div>
+  <div class="form-group">
+    <label for="qrSelectCompteur">Sélectionner un compteur :</label>
+    <select id="qrSelectCompteur">
+      <option value="">Choisir...</option>
+    </select>
+  </div>
+  <div
+    id="qrCodeContainer"
+    style="display: none; text-align: center; margin: 20px 0;"
+  >
+    <div id="qrCodeSvg"></div>
+    <p
+      id="qrCodeInfos"
+      style="margin-top: 10px; color: #666; font-size: 14px;"
+    ></p>
+    <button id="telechargerQrBtn">💾 Télécharger QR Code</button>
+  </div>
+</div>
+```
+
+**C. Ajout d'une bibliothèque QR Code** dans le `<head>` :
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+```
+
+#### 2. `scripts.js`
+
+**Fonctions à ajouter** :
+
+- **`remplirSelectQrCompteur()`** : Remplit le select des compteurs dans le panneau QR Code
+- **`genererQRCode()`** : Appelée quand l'utilisateur sélectionne un compteur → génère le QR Code en SVG
+- **`telechargerQRCode()`** : Convertit le SVG en fichier téléchargeable nommé `[nom_compteur].svg`
+- **Configuration des événements** dans `setupGestionCompteurs()` :
+  - Navigation vers le panneau QR Code
+  - Bouton retour ←
+  - Changement du select → génération du QR Code
+  - Clic sur Télécharger
+
+#### Fonctionnement technique
+
+- Utilisation de la librairie `qrcode-generator` (minified, 8KB) qui génère un QR Code sous forme de matrice
+- Conversion de la matrice en SVG (format vectoriel) avec une fonction maison
+- Téléchargement via un lien `<a download="nom_compteur.svg">` créé dynamiquement
+
+### Vérification : les `.md` et `.txt` déjà faits
+
+- `plan-de-travail.md` ✅ déjà nettoyé
+- `README.md` ✅ déjà mis à jour
+- `init-tab-operateurs.sql` ✅ déjà corrigé
+
+---
+
+Voulez-vous que je passe en **ACT MODE** pour implémenter ce plan ?

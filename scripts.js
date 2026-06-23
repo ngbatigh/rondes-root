@@ -504,8 +504,6 @@ function saveReleve(id_ronde, id_operateur, id_compteur, valeur) {
 // AFFICHAGE DES PANNEAUX
 // ============================================================
 
-let previousPanel = "releveForm";
-
 function showPanel(panelId) {
   const form = document.getElementById("releveForm");
   const rondesMenu = document.getElementById("gestionRondesMenu");
@@ -517,6 +515,7 @@ function showPanel(panelId) {
   const modifierCompteur = document.getElementById("modifierCompteurPanel");
   const clonerCompteur = document.getElementById("clonerCompteurPanel");
   const creerCompteur = document.getElementById("creerCompteurPanel");
+  const qrCodeCompteur = document.getElementById("qrCodeCompteurPanel");
 
   // Masquer tous
   form.style.display = "none";
@@ -528,6 +527,7 @@ function showPanel(panelId) {
   modifierCompteur.style.display = "none";
   clonerCompteur.style.display = "none";
   creerCompteur.style.display = "none";
+  qrCodeCompteur.style.display = "none";
 
   // Afficher le bon panneau
   if (panelId === "releveForm") form.style.display = "block";
@@ -550,6 +550,22 @@ function showPanel(panelId) {
     remplirSelectCloner();
   } else if (panelId === "creerCompteurPanel") {
     creerCompteur.style.display = "block";
+  } else if (panelId === "qrCodeCompteurPanel") {
+    qrCodeCompteur.style.display = "block";
+    // Remplir le select des compteurs
+    const select = document.getElementById("qrSelectCompteur");
+    if (select) {
+      select.innerHTML = '<option value="">Choisir...</option>';
+      tabCompteurs.forEach((c) => {
+        const opt = document.createElement("option");
+        opt.value = c.id_compteur;
+        opt.textContent = `${c.id_compteur} — ${c.nom_compteur}`;
+        select.appendChild(opt);
+      });
+    }
+    // Cacher le conteneur QR
+    const container = document.getElementById("qrCodeContainer");
+    if (container) container.style.display = "none";
   }
 }
 
@@ -588,8 +604,6 @@ function setupSidebar() {
         showPanel("releveForm");
         if (action === "recap")
           showMessage("📋 Recap ronde - Fonctionnalité à venir");
-        else if (action === "operateurs")
-          showMessage("👥 Gestion des opérateurs - Fonctionnalité à venir");
         else if (action === "dashboard")
           showMessage("📈 Tableau de bord - Fonctionnalité à venir");
         else if (action === "tableur")
@@ -740,7 +754,6 @@ function renderActiverCheckList() {
     div.style.flexDirection = "column";
     div.style.alignItems = "stretch";
 
-    // En-tête avec l'ID et le nom
     const header = document.createElement("div");
     header.style.display = "flex";
     header.style.justifyContent = "space-between";
@@ -773,7 +786,6 @@ function renderActiverCheckList() {
     header.appendChild(badge);
     div.appendChild(header);
 
-    // Checkboxes
     const row = document.createElement("div");
     row.style.display = "flex";
     row.style.gap = "20px";
@@ -820,7 +832,6 @@ function enregistrerActiver() {
     }
   });
 
-  // Mettre à jour enservice_compteur en fonction de actif_compteur
   tabCompteurs.forEach((c) => {
     if (c.actif_compteur && !c.enservice_compteur) {
       c.enservice_compteur = new Date()
@@ -877,7 +888,6 @@ function chargerCompteurDansFormModifier() {
   document.getElementById("modifierVisible").checked = c.visible_compteur;
   document.getElementById("modifierActif").checked = c.actif_compteur;
 
-  // Remplir les listes déroulantes
   fillSelectFromArray("modifierSection", sections, "Sélectionner...");
   fillSelectFromArray("modifierFamille", famille_list, "Sélectionner...");
   fillSelectFromArray("modifierGroupe1", groupe1_list, "Sélectionner...");
@@ -900,7 +910,6 @@ function enregistrerModification() {
 
   const newId = document.getElementById("modifierIdCompteur").value.trim();
 
-  // Vérification unicité du nouvel ID (seulement si l'ID a été modifié)
   if (newId !== id && tabCompteurs.find((x) => x.id_compteur === newId)) {
     showMessage("Cet ID existe déjà.", "error");
     return;
@@ -1042,7 +1051,6 @@ function creerCompteur() {
   tabCompteurs.push(nouveau);
   localStorage.setItem("tabCompteurs", JSON.stringify(tabCompteurs));
 
-  // Réinitialiser le formulaire
   document.getElementById("creerIdCompteur").value = "";
   document.getElementById("creerNom").value = "";
   document.getElementById("creerUnite").value = "";
@@ -1076,6 +1084,9 @@ function setupGestionCompteurs() {
   document
     .getElementById("goToCreerCompteur")
     ?.addEventListener("click", () => showPanel("creerCompteurPanel"));
+  document
+    .getElementById("goToQrCodeCompteur")
+    ?.addEventListener("click", () => showPanel("qrCodeCompteurPanel"));
 
   // Retours ←
   document
@@ -1092,6 +1103,9 @@ function setupGestionCompteurs() {
     ?.addEventListener("click", () => showPanel("gestionCompteursMenu"));
   document
     .getElementById("backFromCreer")
+    ?.addEventListener("click", () => showPanel("gestionCompteursMenu"));
+  document
+    .getElementById("backFromQrCode")
     ?.addEventListener("click", () => showPanel("gestionCompteursMenu"));
 
   // Activer
@@ -1128,6 +1142,75 @@ function setupGestionCompteurs() {
   document
     .getElementById("annulerCreer")
     ?.addEventListener("click", () => showPanel("gestionCompteursMenu"));
+
+  // ----- QR Code -----
+  document
+    .getElementById("qrSelectCompteur")
+    ?.addEventListener("change", function () {
+      const idCompteur = this.value;
+      const container = document.getElementById("qrCodeContainer");
+      const svgDiv = document.getElementById("qrCodeSvg");
+      const infos = document.getElementById("qrCodeInfos");
+
+      if (!idCompteur) {
+        container.style.display = "none";
+        return;
+      }
+
+      const compteur = tabCompteurs.find((c) => c.id_compteur === idCompteur);
+      if (!compteur) return;
+
+      const typeNumber = 0;
+      const errorCorrectionLevel = "L";
+      const qr = qrcode(typeNumber, errorCorrectionLevel);
+      qr.addData(idCompteur);
+      qr.make();
+
+      const moduleCount = qr.getModuleCount();
+      const moduleSize = 6;
+      const size = moduleCount * moduleSize;
+      let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`;
+      svg += `<rect width="${size}" height="${size}" fill="white"/>`;
+      for (let row = 0; row < moduleCount; row++) {
+        for (let col = 0; col < moduleCount; col++) {
+          if (qr.isDark(row, col)) {
+            const x = col * moduleSize;
+            const y = row * moduleSize;
+            svg += `<rect x="${x}" y="${y}" width="${moduleSize}" height="${moduleSize}" fill="black"/>`;
+          }
+        }
+      }
+      svg += `</svg>`;
+
+      svgDiv.innerHTML = svg;
+      infos.textContent = `ID: ${compteur.id_compteur} — ${compteur.nom_compteur}`;
+      container.style.display = "block";
+    });
+
+  document
+    .getElementById("telechargerQrBtn")
+    ?.addEventListener("click", function () {
+      const select = document.getElementById("qrSelectCompteur");
+      const idCompteur = select.value;
+      if (!idCompteur) return;
+
+      const compteur = tabCompteurs.find((c) => c.id_compteur === idCompteur);
+      if (!compteur) return;
+
+      const svgElem = document.querySelector("#qrCodeSvg svg");
+      if (!svgElem) return;
+
+      const svgString = new XMLSerializer().serializeToString(svgElem);
+      const blob = new Blob([svgString], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${compteur.nom_compteur}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
 
   // Initialiser les listes déroulantes des formulaires
   fillSelectFromArray("creerSection", sections, "Sélectionner...");
@@ -1170,26 +1253,20 @@ function setupEventListeners() {
 // ============================================================
 
 function loadSavedData() {
-  // Vérifier si toutes les clés nécessaires sont dans localStorage
   const hasSections = localStorage.getItem("sections");
   const hasTypeRonde = localStorage.getItem("type_ronde");
   const hasTabCompteurs = localStorage.getItem("tabCompteurs");
   const hasRondeDB = localStorage.getItem("rondeDB");
 
   if (hasSections && hasTypeRonde && hasTabCompteurs && hasRondeDB) {
-    // Charger les constantes
     sections = JSON.parse(localStorage.getItem("sections"));
     famille_list = JSON.parse(localStorage.getItem("famille_list"));
     groupe1_list = JSON.parse(localStorage.getItem("groupe1_list"));
     groupe2_list = JSON.parse(localStorage.getItem("groupe2_list"));
 
-    // Charger type_ronde
     type_ronde = JSON.parse(hasTypeRonde);
-
-    // Charger tabCompteurs
     tabCompteurs = JSON.parse(hasTabCompteurs);
 
-    // Charger rondeDB avec nettoyage des anciennes données
     const parsed = JSON.parse(hasRondeDB);
     for (const compteur in parsed) {
       if (Array.isArray(parsed[compteur])) {
@@ -1202,7 +1279,6 @@ function loadSavedData() {
     }
     rondeDB = parsed;
   } else {
-    // Premier lancement : tout initialiser
     initDatabase();
   }
 

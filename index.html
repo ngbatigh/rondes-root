@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gestion des Relevés de Compteurs</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   </head>
   <body>
     <div class="overlay" id="overlay"></div>
@@ -14,9 +15,6 @@
       <nav>
         <ul class="sidebar-menu">
           <li><a href="#" data-action="recap">📋 Recap ronde</a></li>
-          <li>
-            <a href="#" data-action="operateurs">👥 Gestion des opérateurs</a>
-          </li>
           <li>
             <a href="#" data-action="compteurs">🔢 Gestion des compteurs</a>
           </li>
@@ -57,6 +55,44 @@
               <span class="menu-card-icon">➕</span>
               <span class="menu-card-text">Créer compteur</span>
             </button>
+            <button class="menu-card" id="goToQrCodeCompteur">
+              <span class="menu-card-icon">📱</span>
+              <span class="menu-card-text">Créer QR Code</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== Panneau QR Code compteur ==================== -->
+        <div id="qrCodeCompteurPanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromQrCode">←</button>
+            <h2>📱 Créer QR Code</h2>
+          </div>
+          <div class="form-group">
+            <label for="qrSelectCompteur">Sélectionner un compteur :</label>
+            <select id="qrSelectCompteur">
+              <option value="">Choisir...</option>
+            </select>
+          </div>
+          <div
+            id="qrCodeContainer"
+            style="display: none; text-align: center; margin: 20px 0"
+          >
+            <div
+              id="qrCodeSvg"
+              style="
+                background: white;
+                display: inline-block;
+                padding: 16px;
+                border-radius: 8px;
+                border: 1px solid #e0e0e0;
+              "
+            ></div>
+            <p
+              id="qrCodeInfos"
+              style="margin-top: 12px; color: #666; font-size: 14px"
+            ></p>
+            <button id="telechargerQrBtn">💾 Télécharger QR Code</button>
           </div>
         </div>
 
