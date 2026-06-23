@@ -1,4 +1,4 @@
-## Synthèse : Gestion des données des rondes
+## Synthèse : Gestion des données des rondes et des compteurs
 
 ### 1. Stockage — `localStorage` du navigateur
 
@@ -16,11 +16,10 @@ Deux entités sont sauvegardées automatiquement après chaque relevé :
 #### `type_ronde` (initialisé en dur dans `scripts.js`)
 ```json
 [
-  { "id_ronde": 0, "ronde": "Relevé journalier", "delai": "1440", "description_ronde": "..." },
-  { "id_ronde": 1, "ronde": "Relevé de quart",   "delai": "480",  "description_ronde": "..." }
+  { "id_ronde": 0, "ronde": "Relevé journalier", "delai": "1440", "description_ronde": "relevé de tous les compteurs chaque matin aux alentours de 06:00" },
+  { "id_ronde": 1, "ronde": "Relevé de quart",   "delai": "480",  "description_ronde": "relevé de tous les compteurs chaque quart de 8 heures" }
 ]
 ```
-> ⚠ Ce tableau est modifiable en localStorage mais pas via l'interface actuelle (aucun formulaire de gestion des rondes).
 
 #### `rondeDB` (ex-`relevesDB`)
 ```json
@@ -37,7 +36,40 @@ Deux entités sont sauvegardées automatiquement après chaque relevé :
 
 ---
 
-### 3. Cycle de vie d'un relevé
+### 3. Gestion des types de rondes
+
+**Depuis l'interface utilisateur (menu latéral → 🔄 Gestion des Rondes) :**
+
+- **Ajouter type de ronde** : formulaire avec Nom, Délai (min), Description + boutons ✅ Ajouter et ❌ Annuler
+- **Supprimer type de ronde** : liste avec cases à cocher + confirmation avant suppression
+- Les modifications sont sauvegardées dans `localStorage` et la liste déroulante du formulaire de relevé est mise à jour automatiquement
+- L'`id_ronde` est auto-incrémenté à partir du max existant
+
+---
+
+### 4. Gestion des compteurs
+
+**État actuel : les compteurs sont figés**
+
+Les 5 compteurs sont définis en dur dans `scripts.js` comme clés de l'objet `rondeDB` :
+
+```javascript
+let rondeDB = {
+  eau: [],        // Eau (m³)
+  electricite: [], // Électricité (kWh)
+  ddo: [],        // DDO (m³)
+  produit: [],    // Produit (hl)
+  temp: []        // Temp (min)
+};
+```
+
+La liste déroulante `<select id="compteur">` dans `index.html` contient ces 5 compteurs en HTML statique.
+
+**Contrairement aux types de rondes, il n'existe aucun panneau d'administration pour gérer les compteurs (ajout, modification, suppression).**
+
+---
+
+### 5. Cycle de vie d'un relevé
 
 ```
 1. Utilisateur remplit le formulaire
@@ -54,7 +86,7 @@ Deux entités sont sauvegardées automatiquement après chaque relevé :
 
 ---
 
-### 4. Logique métier actuelle
+### 6. Logique métier actuelle
 
 - **Pas de calcul de consommation** — la collecte est brute
 - **Pas de blocage** — aucune comparaison avec un relevé antérieur
@@ -63,13 +95,15 @@ Deux entités sont sauvegardées automatiquement après chaque relevé :
 
 ---
 
-### 5. Points importants
+### 7. Points importants
 
 - **Persistance** : les données survivent à la fermeture du navigateur (localStorage)
 - **Données de test** : si localStorage est vide, `initDatabase()` crée 5 relevés (un par compteur) datés de la veille
 - **Nettoyage automatique** : au chargement, les anciens champs `consommation` sont supprimés des relevés
-- **Types de rondes** : stockés séparément mais **non gérables** depuis l'interface utilisateur actuellement
+- **Types de rondes** : gérables depuis l'interface (ajout/suppression avec confirmation)
+- **Compteurs** : NON gérables depuis l'interface (définis en dur)
+- **Opérateurs** : NON gérables depuis l'interface (liste statique dans le HTML)
 
+---
 
-
-# important: prevoir une validation de confirmation avant toute supression ou ajout de donnee
+# Important : une validation de confirmation est requise avant toute suppression ou ajout de donnée

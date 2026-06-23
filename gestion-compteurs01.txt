@@ -1,0 +1,66 @@
+## Synthèse : Gestion des compteurs
+
+### 1. Définition des compteurs
+
+Les compteurs sont définis **en dur** dans `scripts.js` comme clés de l'objet `rondeDB` :
+
+```javascript
+let rondeDB = {
+  eau: [],
+  electricite: [],
+  ddo: [],
+  produit: [],
+  temp: [],
+};
+```
+
+**5 compteurs fixes :**
+| Clé           | Libellé     | Unité |
+|---------------|-------------|-------|
+| `eau`         | Eau         | m³    |
+| `electricite` | Électricité | kWh   |
+| `ddo`         | DDO         | m³    |
+| `produit`     | Produit     | hl    |
+| `temp`        | Temp        | min   |
+
+### 2. Interface utilisateur
+
+La liste déroulante `<select id="compteur">` dans `index.html` contient ces 5 compteurs en dur :
+
+```html
+<option value="eau">Eau (m³)</option>
+<option value="electricite">Électricité (kWh)</option>
+<option value="ddo">DDO (m³)</option>
+<option value="produit">Produit (hl)</option>
+<option value="temp">Temp (min)</option>
+```
+
+### 3. Stockage des relevés
+
+Quand un relevé est saisi, il est poussé dans `rondeDB[compteur]` :
+
+```
+rondeDB = {
+  eau:      [ { id_ronde, id_operateur, valeur, date, heure, commentaire }, ... ],
+  electricite: [ ... ],
+  ddo:      [ ... ],
+  produit:  [ ... ],
+  temp:     [ ... ]
+}
+```
+
+### 4. Points importants
+
+- **Pas de gestion dynamique** — contrairement aux types de rondes, il n'existe **aucun panneau d'administration** pour ajouter, modifier ou supprimer des compteurs.
+- **Pas de suppression** possible depuis l'interface.
+- Si un compteur n'a pas encore de relevé, le tableau est vide (`rondeDB["eau"] = []`) mais la clé existe toujours.
+- Les compteurs sont donc actuellement **figés** — seuls les 5 définis en dur peuvent être utilisés.
+
+### 5. Différence avec les types de rondes
+
+| Aspect                     | Types de rondes (`type_ronde`) | Compteurs (`rondeDB`) |
+|----------------------------|--------------------------------|-----------------------|
+| Défini en dur au départ    | ✅ Oui (journalier + quart)    | ✅ Oui (5 compteurs) |
+| Gérable depuis l'interface | ✅ Oui (Ajouter / Supprimer)   | ❌ Non               |
+| Stocké dans localStorage   | ✅ Oui                         | ✅ Oui               |
+| Modifiable dynamiquement   | ✅ Oui                         | ❌ Non (clés figées) |
