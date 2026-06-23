@@ -34,6 +34,48 @@
       </header>
 
       <main>
+        <div id="gestionRondes" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backToReleve">←</button>
+            <h2>🔄 Gestion des types de rondes</h2>
+          </div>
+
+          <div id="rondesList"></div>
+
+          <hr />
+
+          <h3>Ajouter une nouvelle ronde</h3>
+
+          <div class="form-group">
+            <label for="nouvelleRondeNom">Nom de la ronde :</label>
+            <input
+              type="text"
+              id="nouvelleRondeNom"
+              placeholder="Ex: Relevé hebdomadaire"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="nouvelleRondeDelai">Délai (minutes) :</label>
+            <input
+              type="number"
+              id="nouvelleRondeDelai"
+              placeholder="Ex: 10080"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="nouvelleRondeDescription">Description :</label>
+            <input
+              type="text"
+              id="nouvelleRondeDescription"
+              placeholder="Ex: relevé du lundi matin"
+            />
+          </div>
+
+          <button id="ajouterRondeBtn">➕ Ajouter la ronde</button>
+        </div>
+
         <form id="releveForm">
           <div class="form-group">
             <label for="operateur">Opérateur :</label>

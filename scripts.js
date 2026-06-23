@@ -177,9 +177,154 @@ function setupSidebar() {
     link.addEventListener("click", (e) => {
       e.preventDefault();
       const action = link.dataset.action;
-      showMessage(`Navigation vers : ${link.textContent.trim()}`, "success");
       closeSidebar();
+
+      if (action === "rondes") {
+        showPanel("gestionRondes");
+      } else {
+        // Pour tous les autres, retour au formulaire de relevé
+        showPanel("releveForm");
+        if (action === "recap") {
+          showMessage("📋 Recap ronde - Fonctionnalité à venir", "success");
+        } else if (action === "operateurs") {
+          showMessage(
+            "👥 Gestion des opérateurs - Fonctionnalité à venir",
+            "success",
+          );
+        } else if (action === "compteurs") {
+          showMessage(
+            "🔢 Gestion des compteurs - Fonctionnalité à venir",
+            "success",
+          );
+        } else if (action === "dashboard") {
+          showMessage("📈 Tableau de bord - Fonctionnalité à venir", "success");
+        } else if (action === "tableur") {
+          showMessage("📑 Tableur - Fonctionnalité à venir", "success");
+        }
+      }
     });
+  });
+}
+
+// Afficher un panneau et masquer le formulaire de relevé (ou l'inverse)
+function showPanel(panelId) {
+  const form = document.getElementById("releveForm");
+  const gestionRondes = document.getElementById("gestionRondes");
+
+  if (panelId === "gestionRondes") {
+    form.style.display = "none";
+    gestionRondes.style.display = "block";
+    renderRondesList();
+  } else {
+    gestionRondes.style.display = "none";
+    form.style.display = "block";
+  }
+}
+
+// Afficher la liste des types de rondes
+function renderRondesList() {
+  const container = document.getElementById("rondesList");
+  container.innerHTML = "";
+
+  if (type_ronde.length === 0) {
+    container.innerHTML =
+      '<p style="color: #666; font-style: italic; text-align: center; padding: 20px;">Aucune ronde définie.</p>';
+    return;
+  }
+
+  type_ronde.forEach((r) => {
+    const div = document.createElement("div");
+    div.className = "ronde-item";
+
+    div.innerHTML = `
+      <div class="ronde-info">
+        <strong>${r.ronde}</strong>
+        <span>Délai : ${r.delai} min — ${r.description_ronde}</span>
+      </div>
+      <button class="delete-ronde-btn" data-id="${r.id_ronde}">✕</button>
+    `;
+
+    container.appendChild(div);
+  });
+
+  // Écouter les clics sur les boutons supprimer
+  document.querySelectorAll(".delete-ronde-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.dataset.id);
+      deleteRonde(id);
+    });
+  });
+}
+
+// Ajouter une nouvelle ronde
+function ajouterRonde() {
+  const nomInput = document.getElementById("nouvelleRondeNom");
+  const delaiInput = document.getElementById("nouvelleRondeDelai");
+  const descInput = document.getElementById("nouvelleRondeDescription");
+
+  const nom = nomInput.value.trim();
+  const delai = delaiInput.value.trim();
+  const description = descInput.value.trim();
+
+  if (!nom || !delai) {
+    showMessage("Veuillez remplir au moins le nom et le délai", "error");
+    return;
+  }
+
+  // Calculer le prochain id
+  const maxId =
+    type_ronde.length > 0 ? Math.max(...type_ronde.map((r) => r.id_ronde)) : -1;
+
+  const nouvelleRonde = {
+    id_ronde: maxId + 1,
+    ronde: nom,
+    delai: delai,
+    description_ronde: description || "",
+  };
+
+  type_ronde.push(nouvelleRonde);
+
+  // Sauvegarder
+  localStorage.setItem("type_ronde", JSON.stringify(type_ronde));
+
+  // Mettre à jour l'affichage
+  renderRondesList();
+  fillRondeSelect();
+
+  // Réinitialiser les champs
+  nomInput.value = "";
+  delaiInput.value = "";
+  descInput.value = "";
+
+  showMessage(`Ronde "${nom}" ajoutée avec succès !`);
+}
+
+// Supprimer une ronde
+function deleteRonde(id) {
+  const ronde = type_ronde.find((r) => r.id_ronde === id);
+  if (!ronde) return;
+
+  if (!confirm(`Supprimer la ronde "${ronde.ronde}" ?`)) return;
+
+  type_ronde = type_ronde.filter((r) => r.id_ronde !== id);
+
+  // Sauvegarder
+  localStorage.setItem("type_ronde", JSON.stringify(type_ronde));
+
+  // Mettre à jour
+  renderRondesList();
+  fillRondeSelect();
+
+  showMessage(`Ronde "${ronde.ronde}" supprimée.`);
+}
+
+// Configuration du panneau de gestion des rondes
+function setupGestionRondes() {
+  document
+    .getElementById("ajouterRondeBtn")
+    .addEventListener("click", ajouterRonde);
+  document.getElementById("backToReleve").addEventListener("click", () => {
+    showPanel("releveForm");
   });
 }
 
@@ -253,6 +398,7 @@ function init() {
   loadSavedData();
   setupEventListeners();
   setupSidebar();
+  setupGestionRondes();
 }
 
 // Démarrer l'application
