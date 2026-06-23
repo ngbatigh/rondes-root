@@ -151,6 +151,38 @@ function resetFormAfterSubmit() {
   document.getElementById("valeurActuelle").value = "";
 }
 
+// Menu latéral
+function setupSidebar() {
+  const menuBtn = document.getElementById("menuBtn");
+  const closeBtn = document.getElementById("closeBtn");
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("overlay");
+
+  function openSidebar() {
+    sidebar.classList.add("open");
+    overlay.classList.add("show");
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove("open");
+    overlay.classList.remove("show");
+  }
+
+  menuBtn.addEventListener("click", openSidebar);
+  closeBtn.addEventListener("click", closeSidebar);
+  overlay.addEventListener("click", closeSidebar);
+
+  // Gestion des clics sur les liens du menu
+  document.querySelectorAll(".sidebar-menu a").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const action = link.dataset.action;
+      showMessage(`Navigation vers : ${link.textContent.trim()}`, "success");
+      closeSidebar();
+    });
+  });
+}
+
 // Gestionnaire de soumission du formulaire
 function handleSubmit(event) {
   event.preventDefault();
@@ -220,6 +252,7 @@ function loadSavedData() {
 function init() {
   loadSavedData();
   setupEventListeners();
+  setupSidebar();
 }
 
 // Démarrer l'application

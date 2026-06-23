@@ -7,8 +7,29 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="sidebar" id="sidebar">
+      <button class="close-btn" id="closeBtn">&times;</button>
+      <nav>
+        <ul class="sidebar-menu">
+          <li><a href="#" data-action="recap">📋 Recap ronde</a></li>
+          <li>
+            <a href="#" data-action="operateurs">👥 Gestion des opérateurs</a>
+          </li>
+          <li>
+            <a href="#" data-action="compteurs">🔢 Gestion des compteurs</a>
+          </li>
+          <li><a href="#" data-action="rondes">🔄 Gestion des Rondes</a></li>
+          <li><a href="#" data-action="dashboard">📈 Tableau de bord</a></li>
+          <li><a href="#" data-action="tableur">📑 Tableur</a></li>
+        </ul>
+      </nav>
+    </div>
+
     <div class="container">
       <header>
+        <button class="menu-btn" id="menuBtn">☰</button>
         <h1>📊 Relevés de Compteurs</h1>
       </header>
 
