@@ -191,3 +191,7 @@ Formulaire complet avec :
 ---
 
 Ce plan révisé vous convient-il ? Je peux le mettre en œuvre dès que vous basculez en **ACT MODE**.
+
+---
+
+## prevoir une gestion de l'affichage de l'id_compteurs dans les listes sur option

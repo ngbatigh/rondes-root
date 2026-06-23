@@ -2,65 +2,104 @@
 
 ### 1. Définition des compteurs
 
-Les compteurs sont définis **en dur** dans `scripts.js` comme clés de l'objet `rondeDB` :
+Les compteurs sont définis dans `scripts.js` comme un tableau `tabCompteurs` de 9 objets initialisés depuis le fichier `init-tab-compteurs.sql`.
+
+**9 compteurs initialisés :**
+
+| id_compteur | nom_compteur | unite | section | famille | groupe1 | groupe2 | enservice | visible | actif |
+|---|---|---|---|---|---|---|---|---|---|
+| A-0000-0000-0000-0001 | eau mitige laveuse | m3 | Embouteillage | Eau | A | 1 | 2026-06-01 | ✅ | ✅ |
+| B-0000-0000-0000-0001 | eau mitige laveuse | m3 | Embouteillage | Eau | A | 1 | (vide) | ✅ | ❌ |
+| C-0000-0000-0000-0001 | eau mitige laveuse | m3 | Embouteillage | Eau | A | 1 | (vide) | ✅ | ❌ |
+| A-0000-0000-0000-0010 | electricite Axima | kwh | Salle Des Machines | Energie | A | 1 | 2026-06-20 | ✅ | ✅ |
+| B-0000-0000-0000-0010 | electricite Axima | kwh | Salle Des Machines | Energie | A | 1 | (vide) | ✅ | ❌ |
+| C-0000-0000-0000-0010 | electricite Axima | kwh | Salle Des Machines | Energie | A | 1 | (vide) | ✅ | ❌ |
+| A-0000-0000-0000-0011 | temperature glycole | °C | Salle Des Machines | Temperature | F | 1 | 2026-06-19 | ✅ | ✅ |
+| B-0000-0000-0000-0011 | temperature glycole | °C | Salle Des Machines | Temperature | F | 1 | (vide) | ✅ | ❌ |
+| C-0000-0000-0000-0011 | temperature glycole | °C | Salle Des Machines | Temperature | F | 1 | (vide) | ✅ | ❌ |
+
+### 2. Champs de chaque compteur
+
+- `id_compteur` (identifiant unique, format A/B/C-XXXX-XXXX-XXXX-XXXX)
+- `nom_compteur`
+- `unite_compteur`
+- `debut_compteur` (valeur initiale)
+- `range_compteur` (plage de valeurs)
+- `section_compteur` (liste déroulante depuis constante `sections`)
+- `famille_compteur` (liste déroulante depuis constante `familles`)
+- `groupe1_compteur` (liste déroulante depuis constante `groupe1`)
+- `groupe2_compteur` (liste déroulante depuis constante `groupe2`)
+- `enservice_compteur` (date de mise en service, vide si inactif)
+- `visible_compteur` (booléen)
+- `actif_compteur` (booléen)
+- `description_compteur`
+
+### 3. Constantes (listes déroulantes)
 
 ```javascript
-let rondeDB = {
-  eau: [],
-  electricite: [],
-  ddo: [],
-  produit: [],
-  temp: [],
-};
+const sections = [
+  "Salle Des Machines", "Embouteillage", "Cave-Filtration-Siroperie",
+  "Brassage", "Administration", "Bloc Social",
+  "Traitement Eau Process", "Traitement Eau Usees", "Centre Logistique"
+];
+const familles = ["Eau", "Energie", "DDO", "Vapeur", "Pression", "Temperature", "Debit"];
+const groupe1 = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
+const groupe2 = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 ```
 
-**5 compteurs fixes :**
-| Clé  | Libellé | Unité |
-|---|---|---|
-| `eau` | Eau | m³ |
-| `electricite` | Électricité | kWh |
-| `ddo` | DDO | m³ |
-| `produit` | Produit | hl |
-| `temp` | Temp | min |
+### 4. Interface utilisateur (4 sous-menus)
 
-### 2. Interface utilisateur
+**Menu latéral → 🔢 Gestion des compteurs**
 
-La liste déroulante `<select id="compteur">` dans `index.html` contient ces 5 compteurs en dur :
+1. **✅ Activer compteur** — Liste de tous les compteurs avec :
+   - Badge de statut (✅ Actif & visible / 👁️ Actif mais invisible / ⏸️ Inactif)
+   - Cases à cocher 👁️ Visible et ✅ Actif
+   - Bouton 💾 Enregistrer les modifications
 
-```html
-<option value="eau">Eau (m³)</option>
-<option value="electricite">Électricité (kWh)</option>
-<option value="ddo">DDO (m³)</option>
-<option value="produit">Produit (hl)</option>
-<option value="temp">Temp (min)</option>
-```
+2. **✏️ Modifier compteur** — Formulaire avec :
+   - Liste déroulante pour sélectionner un compteur
+   - Champs : ID (lecture seule), nom, unité, début, range, section, famille, groupe1, groupe2, description
+   - Listes déroulantes pour section, famille, groupe1, groupe2
+   - Cases à cocher visible et actif
+   - Boutons 💾 Enregistrer et ❌ Annuler
 
-### 3. Stockage des relevés
+3. **📋 Cloner compteur** — Formulaire avec :
+   - Liste déroulante pour sélectionner le compteur parent
+   - Champ texte pour le nouvel ID
+   - Aperçu JSON du clone
+   - Boutons 📋 Cloner et ❌ Annuler
+   - Le clone hérite de toutes les valeurs sauf id_compteur
 
-Quand un relevé est saisi, il est poussé dans `rondeDB[compteur]` :
+4. **➕ Créer compteur** — Formulaire complet avec :
+   - Tous les champs (id, nom, unité, début, range, section, famille, groupe1, groupe2, description)
+   - Listes déroulantes pour section, famille, groupe1, groupe2
+   - Cases à cocher visible (✅) et actif (✅) cochées par défaut
+   - Boutons ✅ Créer et ❌ Annuler
 
-```
-rondeDB = {
-  eau:      [ { id_ronde, id_operateur, valeur, date, heure, commentaire }, ... ],
-  electricite: [ ... ],
-  ddo:      [ ... ],
-  produit:  [ ... ],
-  temp:     [ ... ]
-}
-```
+### 5. Stockage localStorage
 
-### 4. Points importants
+| Clé | Contenu |
+|-----|---------|
+| `sections` | Tableau des 9 sections |
+| `famille_list` | Tableau des 7 familles |
+| `groupe1_list` | Tableau des 9 groupes 1 |
+| `groupe2_list` | Tableau des 9 groupes 2 |
+| `tabCompteurs` | Tableau des 9 compteurs |
+| `rondeDB` | Objet des relevés par compteur |
 
-- **Pas de gestion dynamique** — contrairement aux types de rondes, il n'existe **aucun panneau d'administration** pour ajouter, modifier ou supprimer des compteurs.
-- **Pas de suppression** possible depuis l'interface.
-- Si un compteur n'a pas encore de relevé, le tableau est vide (`rondeDB["eau"] = []`) mais la clé existe toujours.
-- Les compteurs sont donc actuellement **figés** — seuls les 5 définis en dur peuvent être utilisés.
+### 6. Fonctions JavaScript principales
 
-### 5. Différence avec les types de rondes
+- `initDatabase()` — Initialise toutes les données au premier lancement
+- `loadSavedData()` — Charge depuis localStorage ou appelle initDatabase()
+- `fillCompteurSelect()` — Remplit le select des compteurs (filtre visible + actif)
+- `renderActiverCheckList()` — Affiche la liste avec checkboxes
+- `enregistrerActiver()` — Enregistre les modifications de visibilité/activité
+- `remplirSelectModifier()` / `chargerCompteurDansFormModifier()` / `enregistrerModification()`
+- `remplirSelectCloner()` / `afficherApercuClone()` / `executerClonage()`
+- `creerCompteur()`
+- `setupGestionCompteurs()` — Configure tous les événements
 
-| Aspect | Types de rondes (`type_ronde`) | Compteurs (`rondeDB`) |
-|---|---|---|
-| Défini en dur au départ | ✅ Oui (journalier + quart) | ✅ Oui (5 compteurs) |
-| Gérable depuis l'interface | ✅ Oui (Ajouter / Supprimer) | ❌ Non |
-| Stocké dans localStorage | ✅ Oui | ✅ Oui |
-| Modifiable dynamiquement | ✅ Oui | ❌ Non (clés figées) |
+### 7. Styles CSS
+
+- `.compteur-id` — font-size: 9px, color: #aaa (ID en petit et gris)
+- `.compteur-nom` — font-size: 14px, font-weight: 600 (nom en gras)
