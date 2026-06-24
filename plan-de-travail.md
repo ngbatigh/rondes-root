@@ -1,24 +1,24 @@
-a ce stade j'aimerais ajouter une fonctionnalite pour la selection du compteur par lecture du qr code scanné a partir du telephone android. les id_compteur sont transforme en code qr colle au compteur. lors de la ronde, au lieu de selectionne le compteur dans une liste, l'operateur scanne le code qr du compteur et le champ compteur sur le formulaire se rempli automatiquement. pour ce faire, ajouter une icone juste en haut du select compteur qui va se charger de lancer le processus de scan code qr recupere l'id_compteur, actualise le champ compteur. ce champ reste inactif durant par defaut et ne devien actif que sur double click avec confirmation la dessus et ceci seulement pour une seule validation de saisie et redevien inactif
+# Plan de travail — Branche lecture-qrcode
 
-## Plan simplifié : Scan QR Code pour sélection de compteur
+## Fonctionnalité 1 : Scan QR Code pour sélection de compteur
 
 ### Objectif
 
 Permettre à l'opérateur de scanner un QR Code pour remplir automatiquement le champ "Compteur" du formulaire.
 
-### Modifications à faire
+### Modifications implémentées
 
 #### 1. `index.html`
 
-- Ajouter la librairie `html5-qrcode` dans le `<head>`
-- Ajouter un bouton **📷 Scanner QR Code** au-dessus du select compteur
-- Ajouter un élément caché pour le flux caméra
+- Ajout de la librairie `html5-qrcode` dans le `<head>`
+- Ajout d'un bouton **📷 Scanner QR Code** au-dessus du select compteur
+- Ajout d'un élément caché pour le flux caméra plein écran
 
 #### 2. `scripts.js`
 
-- Ajouter la logique de scan QR Code avec `Html5Qrcode`
-- Lire l'`id_compteur` scanné et remplir le select compteur
-- Gérer la caméra arrière (facingMode: environment)
+- Logique de scan QR Code avec `Html5Qrcode`
+- Lecture de l'`id_compteur` scanné et remplissage du select compteur
+- Gestion de la caméra arrière (facingMode: environment)
 
 #### 3. `styles.css`
 
@@ -27,6 +27,50 @@ Permettre à l'opérateur de scanner un QR Code pour remplir automatiquement le 
 
 ---
 
-**Phase 1 uniquement** : Mise en place du scan QR Code, sans mécanisme de verrouillage/déverrouillage du champ compteur.
+## Fonctionnalité 2 : Gestion des compteurs (gestion-compteurs)
 
-Voulez-vous que je bascule en **ACT MODE** pour implémenter cela ?
+### Sous-menus de Gestion des compteurs
+
+1. **Activer compteur** — visibilité et statut actif/inactif
+2. **Modifier compteur** — édition complète des champs
+3. **Cloner compteur** — copie avec nouvel ID
+4. **Créer compteur** — formulaire complet avec listes déroulantes
+5. **Créer QR Code** — génération et téléchargement
+
+### Données
+
+```javascript
+const sections = [
+  "Salle Des Machines",
+  "Embouteillage",
+  "Cave-Filtration-Siroperie",
+  "Brassage",
+  "Administration",
+  "Bloc Social",
+  "Traitement Eau Process",
+  "Traitement Eau Usees",
+  "Centre Logistique",
+];
+const famille_list = [
+  "Eau",
+  "Energie",
+  "DDO",
+  "Vapeur",
+  "Pression",
+  "Temperature",
+  "Debit",
+];
+const groupe1_list = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
+const groupe2_list = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+```
+
+### Champs compteurs
+
+- `id_compteur`, `nom_compteur`, `unite_compteur`, `debut_compteur`, `range_compteur`
+- `section_compteur`, `famille_compteur`, `groupe1_compteur`, `groupe2_compteur`
+- `enservice_compteur`, `visible_compteur`, `actif_compteur`, `description_compteur`
+
+### Vérifications
+
+- Unicité de `id_compteur` avant création/modification
+- 9 compteurs initialisés dans `tabCompteurs`
