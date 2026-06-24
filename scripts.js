@@ -1663,6 +1663,24 @@ function init() {
   setupGestionOperateurs();
   setupGestionRondes();
   setupGestionCompteurs();
+
+  // Reset lien en bas de page
+  document
+    .getElementById("resetLinkFooter")
+    ?.addEventListener("click", function (e) {
+      e.preventDefault();
+      if (
+        confirm(
+          "ATTENTION : Réinitialisation complète.\n\nToutes les données seront supprimées et l'application redémarrera.\n\nContinuer ?",
+        )
+      ) {
+        if (confirm("Dernière confirmation : Êtes-vous sûr ?")) {
+          localStorage.clear();
+          sessionStorage.clear();
+          location.reload();
+        }
+      }
+    });
 }
 
 init();
