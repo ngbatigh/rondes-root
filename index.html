@@ -16,6 +16,9 @@
         <ul class="sidebar-menu">
           <li><a href="#" data-action="recap">📋 Recap ronde</a></li>
           <li>
+            <a href="#" data-action="operateurs">👥 Gestion des opérateurs</a>
+          </li>
+          <li>
             <a href="#" data-action="compteurs">🔢 Gestion des compteurs</a>
           </li>
           <li><a href="#" data-action="rondes">🔄 Gestion des Rondes</a></li>
@@ -32,6 +35,145 @@
       </header>
 
       <main>
+        <!-- ==================== Écran d'accueil Gestion des opérateurs ==================== -->
+        <div id="gestionOperateursMenu" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromOperateursMenu">←</button>
+            <h2>👥 Gestion des opérateurs</h2>
+          </div>
+          <div class="menu-cards">
+            <button class="menu-card" id="goToAjouterOperateur">
+              <span class="menu-card-icon">➕</span>
+              <span class="menu-card-text">Ajouter opérateur</span>
+            </button>
+            <button class="menu-card" id="goToModifierOperateur">
+              <span class="menu-card-icon">✏️</span>
+              <span class="menu-card-text">Modifier opérateur</span>
+            </button>
+            <button class="menu-card" id="goToSupprimerOperateur">
+              <span class="menu-card-icon">🗑️</span>
+              <span class="menu-card-text">Supprimer opérateur</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== Panneau Ajouter opérateur ==================== -->
+        <div id="ajouterOperateurPanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromAjouterOperateur">←</button>
+            <h2>➕ Ajouter opérateur</h2>
+          </div>
+          <div class="form-group">
+            <label for="nouvelOperateurId">Matricule (ID) :</label>
+            <input type="text" id="nouvelOperateurId" placeholder="Ex: 966" />
+          </div>
+          <div class="form-group">
+            <label for="nouvelOperateurNom">Nom :</label>
+            <input
+              type="text"
+              id="nouvelOperateurNom"
+              placeholder="Ex: NADJOMBE"
+            />
+          </div>
+          <div class="form-group">
+            <label for="nouvelOperateurPrenom">Prénom :</label>
+            <input
+              type="text"
+              id="nouvelOperateurPrenom"
+              placeholder="Ex: Gbati"
+            />
+          </div>
+          <div class="form-group">
+            <label for="nouvelOperateurFonction">Fonction :</label>
+            <input
+              type="text"
+              id="nouvelOperateurFonction"
+              placeholder="Ex: Chef Service"
+            />
+          </div>
+          <div class="form-group">
+            <label for="nouvelOperateurUser">Nom d'utilisateur :</label>
+            <input
+              type="text"
+              id="nouvelOperateurUser"
+              placeholder="Ex: gbati"
+            />
+          </div>
+          <div class="form-group">
+            <label for="nouvelOperateurMdp">Mot de passe :</label>
+            <input
+              type="text"
+              id="nouvelOperateurMdp"
+              placeholder="Ex: admin"
+            />
+          </div>
+          <div class="btn-row">
+            <button class="btn-secondary" id="annulerAjouterOperateur">
+              ❌ Annuler
+            </button>
+            <button id="ajouterOperateurBtn">✅ Ajouter</button>
+          </div>
+        </div>
+
+        <!-- ==================== Panneau Modifier opérateur ==================== -->
+        <div id="modifierOperateurPanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromModifierOperateur">←</button>
+            <h2>✏️ Modifier opérateur</h2>
+          </div>
+          <div class="form-group">
+            <label for="selectOperateurModif"
+              >Sélectionner un opérateur :</label
+            >
+            <select id="selectOperateurModif">
+              <option value="">Sélectionner...</option>
+            </select>
+          </div>
+          <div id="formModifierOperateur" style="display: none">
+            <div class="form-group">
+              <label for="modifOperateurId">Matricule (ID) :</label>
+              <input type="text" id="modifOperateurId" />
+              <input type="hidden" id="ancienOperateurId" />
+            </div>
+            <div class="form-group">
+              <label for="modifOperateurNom">Nom :</label>
+              <input type="text" id="modifOperateurNom" />
+            </div>
+            <div class="form-group">
+              <label for="modifOperateurPrenom">Prénom :</label>
+              <input type="text" id="modifOperateurPrenom" />
+            </div>
+            <div class="form-group">
+              <label for="modifOperateurFonction">Fonction :</label>
+              <input type="text" id="modifOperateurFonction" />
+            </div>
+            <div class="form-group">
+              <label for="modifOperateurUser">Nom d'utilisateur :</label>
+              <input type="text" id="modifOperateurUser" />
+            </div>
+            <div class="form-group">
+              <label for="modifOperateurMdp">Mot de passe :</label>
+              <input type="text" id="modifOperateurMdp" />
+            </div>
+            <div class="btn-row">
+              <button class="btn-secondary" id="annulerModifierOperateur">
+                ❌ Annuler
+              </button>
+              <button id="modifierOperateurBtn">💾 Enregistrer</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== Panneau Supprimer opérateur ==================== -->
+        <div id="supprimerOperateurPanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <button class="back-btn" id="backFromSupprimerOperateur">←</button>
+            <h2>🗑️ Supprimer opérateur</h2>
+          </div>
+          <div id="operateursCheckList"></div>
+          <button id="supprimerOperateursBtn">🗑️ Supprimer la sélection</button>
+        </div>
+
         <!-- ==================== Écran d'accueil Gestion des Compteurs ==================== -->
         <div id="gestionCompteursMenu" class="panel" style="display: none">
           <div class="panel-header">
@@ -365,9 +507,6 @@
             <label for="operateur">Opérateur :</label>
             <select id="operateur" name="operateur" required>
               <option value="">Sélectionner un opérateur</option>
-              <option value="Koffi">Koffi</option>
-              <option value="Gbati">Gbati</option>
-              <option value="Abalo">Abalo</option>
             </select>
           </div>
 
