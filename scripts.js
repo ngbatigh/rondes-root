@@ -237,36 +237,6 @@ function showMessage(message, type = "success") {
 // GESTION DES OPÉRATEURS
 // ============================================================
 
-function initOperateurs() {
-  tabOperateurs = [
-    {
-      id_operateur: "966",
-      nom_operateur: "NADJOMBE",
-      prenom_operateur: "Gbati",
-      fonction_operateur: "Chef Service",
-      nomuser_operateur: "gbati",
-      motdepasse_operateur: "admin",
-    },
-    {
-      id_operateur: "877",
-      nom_operateur: "KPAKPA",
-      prenom_operateur: "Tam",
-      fonction_operateur: "Machiniste",
-      nomuser_operateur: "",
-      motdepasse_operateur: "123456",
-    },
-    {
-      id_operateur: "935",
-      nom_operateur: "TSOGBE",
-      prenom_operateur: "Alain",
-      fonction_operateur: "Chef d'Equipe SDM",
-      nomuser_operateur: "alain",
-      motdepasse_operateur: "123456",
-    },
-  ];
-  localStorage.setItem("tabOperateurs", JSON.stringify(tabOperateurs));
-}
-
 function remplirOperateursSelect() {
   const selectOperateur = document.getElementById("operateur");
   const selectModif = document.getElementById("selectOperateurModif");
@@ -590,6 +560,35 @@ function initDatabase() {
     },
   ];
   localStorage.setItem("type_ronde", JSON.stringify(type_ronde));
+
+  // Opérateurs par défaut
+  tabOperateurs = [
+    {
+      id_operateur: "966",
+      nom_operateur: "NADJOMBE",
+      prenom_operateur: "Gbati",
+      fonction_operateur: "Chef Service",
+      nomuser_operateur: "gbati",
+      motdepasse_operateur: "admin",
+    },
+    {
+      id_operateur: "877",
+      nom_operateur: "KPAKPA",
+      prenom_operateur: "Tam",
+      fonction_operateur: "Machiniste",
+      nomuser_operateur: "",
+      motdepasse_operateur: "123456",
+    },
+    {
+      id_operateur: "935",
+      nom_operateur: "TSOGBE",
+      prenom_operateur: "Alain",
+      fonction_operateur: "Chef d'Equipe SDM",
+      nomuser_operateur: "alain",
+      motdepasse_operateur: "123456",
+    },
+  ];
+  localStorage.setItem("tabOperateurs", JSON.stringify(tabOperateurs));
 
   // Compteurs (9 objets)
   tabCompteurs = [
@@ -1621,14 +1620,6 @@ function loadSavedData() {
   const hasTypeRonde = localStorage.getItem("type_ronde");
   const hasTabCompteurs = localStorage.getItem("tabCompteurs");
   const hasRondeDB = localStorage.getItem("rondeDB");
-  const hasTabOperateurs = localStorage.getItem("tabOperateurs");
-
-  // Charger les opérateurs
-  if (hasTabOperateurs) {
-    tabOperateurs = JSON.parse(hasTabOperateurs);
-  } else {
-    initOperateurs();
-  }
 
   if (hasSections && hasTypeRonde && hasTabCompteurs && hasRondeDB) {
     sections = JSON.parse(localStorage.getItem("sections"));
@@ -1653,6 +1644,8 @@ function loadSavedData() {
   } else {
     initDatabase();
   }
+
+  tabOperateurs = JSON.parse(localStorage.getItem("tabOperateurs"));
 
   fillRondeSelect();
   fillCompteurSelect();
