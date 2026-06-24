@@ -8,9 +8,54 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   </head>
   <body>
+    <!-- Page de Login -->
+    <div id="loginPage" class="login-page">
+      <div class="login-container">
+        <!-- Identification visuelle de l'application -->
+        <div class="login-header">
+          <div class="app-logo">📊</div>
+          <h1 class="app-title">Relevés de Compteurs</h1>
+          <p class="app-subtitle">Gestion des Rondes</p>
+        </div>
+
+        <!-- Formulaire de connexion -->
+        <form id="loginForm" class="login-form">
+          <div class="form-group">
+            <label for="loginUser">Nom d'utilisateur</label>
+            <input
+              type="text"
+              id="loginUser"
+              placeholder="Ex: gbati"
+              required
+              autocomplete="username"
+            />
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Mot de passe</label>
+            <input
+              type="password"
+              id="loginPassword"
+              placeholder="Votre mot de passe"
+              required
+              autocomplete="current-password"
+            />
+          </div>
+          <button type="submit" class="btn-login">Se connecter</button>
+        </form>
+
+        <!-- Message d'erreur -->
+        <div id="loginMessage" class="login-message"></div>
+
+        <!-- Bypass pour test -->
+        <div class="bypass-footer">
+          <a href="#" id="bypassLoginBtn" class="bypass-link">Contourner</a>
+        </div>
+      </div>
+    </div>
+
     <div class="overlay" id="overlay"></div>
 
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar" id="sidebar" style="display: none">
       <button class="close-btn" id="closeBtn">&times;</button>
       <nav>
         <ul class="sidebar-menu">
@@ -28,7 +73,7 @@
       </nav>
     </div>
 
-    <div class="container">
+    <div class="container" style="display: none">
       <header>
         <button class="menu-btn" id="menuBtn">☰</button>
         <h1>📊 Relevés de Compteurs</h1>

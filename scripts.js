@@ -567,25 +567,25 @@ function initDatabase() {
       id_operateur: "966",
       nom_operateur: "NADJOMBE",
       prenom_operateur: "Gbati",
-      fonction_operateur: "Chef Service",
-      nomuser_operateur: "gbati",
+      fonction_operateur: "admin",
+      nomuser_operateur: "gbati@nadjombe",
       motdepasse_operateur: "admin",
     },
     {
       id_operateur: "877",
       nom_operateur: "KPAKPA",
       prenom_operateur: "Tam",
-      fonction_operateur: "Machiniste",
-      nomuser_operateur: "",
-      motdepasse_operateur: "123456",
+      fonction_operateur: "operateur",
+      nomuser_operateur: "tam@kpakpa",
+      motdepasse_operateur: "tam@kpakpa",
     },
     {
       id_operateur: "935",
       nom_operateur: "TSOGBE",
       prenom_operateur: "Alain",
-      fonction_operateur: "Chef d'Equipe SDM",
-      nomuser_operateur: "alain",
-      motdepasse_operateur: "123456",
+      fonction_operateur: "operateur",
+      nomuser_operateur: "alain@tsogbe",
+      motdepasse_operateur: "alain@tsogbe",
     },
   ];
   localStorage.setItem("tabOperateurs", JSON.stringify(tabOperateurs));
@@ -1657,6 +1657,48 @@ function loadSavedData() {
 
 function init() {
   loadSavedData();
+
+  const session = checkSession();
+
+  if (!session) {
+    // Pas de session : afficher la page de login
+    document.getElementById("loginPage").style.display = "flex";
+    document.querySelector(".container").style.display = "none";
+    document.getElementById("sidebar").style.display = "none";
+
+    // Gérer le submit du formulaire de login
+    document
+      .getElementById("loginForm")
+      .addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const user = document.getElementById("loginUser").value.trim();
+        const password = document.getElementById("loginPassword").value;
+
+        if (!user || !password) {
+          showLoginMessage("Veuillez remplir tous les champs", "error");
+          return;
+        }
+
+        await loginUser(user, password);
+      });
+
+    // Gérer le lien bypass
+    document
+      .getElementById("bypassLoginBtn")
+      .addEventListener("click", function (e) {
+        e.preventDefault();
+        bypassLogin();
+      });
+  } else {
+    // Session existante : afficher l'application
+    document.getElementById("loginPage").style.display = "none";
+    document.querySelector(".container").style.display = "block";
+    document.getElementById("sidebar").style.display = "block";
+
+    // Vérifier rôle admin
+    updateUIBasedOnRole(session);
+  }
+
   remplirOperateursSelect();
   setupEventListeners();
   setupSidebar();
@@ -1681,6 +1723,155 @@ function init() {
         }
       }
     });
+}
+
+/**
+ * Connecter un opérateur par nom d'utilisateur
+ */
+async function loginUser(username, password) {
+  const operateur = tabOperateurs.find(
+    (op) => op.nomuser_operateur.toLowerCase() === username.toLowerCase(),
+  );
+
+  if (!operateur) {
+    showLoginMessage("Nom d'utilisateur introuvable.", "error");
+    return;
+  }
+
+  // Vérifier si le mot de passe est déjà haché (64 chars) ou en clair
+  let hashInput;
+  if (operateur.motdepasse_operateur.length === 64) {
+    hashInput = await hashPassword(password);
+  } else {
+    hashInput = password;
+  }
+
+  if (operateur.motdepasse_operateur !== hashInput) {
+    showLoginMessage("Mot de passe incorrect.", "error");
+    return;
+  }
+
+  // Si le mot de passe était en clair, le hasher maintenant (migration)
+  if (operateur.motdepasse_operateur.length !== 64) {
+    try {
+      const nouveauHash = await hashPassword(password);
+      operateur.motdepasse_operateur = nouveauHash;
+      localStorage.setItem("tabOperateurs", JSON.stringify(tabOperateurs));
+    } catch (e) {
+      console.warn(
+        "Impossible de hacher le mot de passe lors de la migration.",
+        e,
+      );
+    }
+  }
+
+  // Créer la session
+  const session = {
+    id_operateur: operateur.id_operateur,
+    nom: `${operateur.prenom_operateur} ${operateur.nom_operateur}`,
+    fonction: operateur.fonction_operateur,
+    dateConnexion: new Date().toISOString(),
+  };
+
+  sessionStorage.setItem("session", JSON.stringify(session));
+  showLoginMessage(`Bienvenue ${session.nom} !`, "success");
+
+  // Rediriger vers l'application après 1 seconde
+  setTimeout(() => {
+    location.reload();
+  }, 1000);
+}
+
+/**
+ * Afficher un message dans le formulaire de login
+ */
+function showLoginMessage(message, type = "success") {
+  const messageDiv = document.getElementById("loginMessage");
+  if (!messageDiv) return;
+
+  messageDiv.textContent = message;
+  messageDiv.className = `login-message ${type}`;
+  messageDiv.style.display = "block";
+
+  setTimeout(() => {
+    messageDiv.style.display = "none";
+    messageDiv.className = "login-message";
+  }, 3000);
+}
+
+/**
+ * Contourner le login pour les tests
+ */
+function bypassLogin() {
+  const premierOp = tabOperateurs.find((op) => op.nomuser_operateur);
+
+  if (!premierOp) {
+    alert("Aucun opérateur avec login trouvé. Créez-en un d'abord.");
+    return;
+  }
+
+  const session = {
+    id_operateur: premierOp.id_operateur,
+    nom: `${premierOp.prenom_operateur} ${premierOp.nom_operateur}`,
+    fonction: premierOp.fonction_operateur || "admin",
+    dateConnexion: new Date().toISOString(),
+    bypass: true,
+  };
+
+  sessionStorage.setItem("session", JSON.stringify(session));
+  location.reload();
+}
+
+/**
+ * Vérifier si une session existe
+ */
+function checkSession() {
+  const sessionStr = sessionStorage.getItem("session");
+  if (!sessionStr) return null;
+
+  try {
+    const session = JSON.parse(sessionStr);
+    const operateur = tabOperateurs.find(
+      (op) => op.id_operateur === session.id_operateur,
+    );
+    if (!operateur) {
+      sessionStorage.removeItem("session");
+      return null;
+    }
+    return session;
+  } catch (e) {
+    sessionStorage.removeItem("session");
+    return null;
+  }
+}
+
+/**
+ * Mettre à jour l'interface selon le rôle
+ */
+function updateUIBasedOnRole(session) {
+  const operateur = tabOperateurs.find(
+    (op) => op.id_operateur === session.id_operateur,
+  );
+  if (!operateur) return;
+
+  const isAdmin = operateur.fonction_operateur === "admin";
+
+  // Masquer les menus admin dans la sidebar
+  const sidebarLinks = document.querySelectorAll(".sidebar-menu li a");
+  sidebarLinks.forEach((link) => {
+    const action = link.getAttribute("data-action");
+    if (!isAdmin && ["operateurs", "compteurs", "rondes"].includes(action)) {
+      link.style.display = "none";
+    } else {
+      link.style.display = "block";
+    }
+  });
+
+  // Masquer le bouton menu si pas admin
+  const menuBtn = document.getElementById("menuBtn");
+  if (menuBtn) {
+    menuBtn.style.display = isAdmin ? "block" : "none";
+  }
 }
 
 init();
