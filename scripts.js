@@ -1723,6 +1723,48 @@ function init() {
         }
       }
     });
+
+  // Bouton Fin Ronde
+  document
+    .getElementById("finRondeBtn")
+    ?.addEventListener("click", function () {
+      finRonde();
+    });
+
+  // Bouton Nouvelle Session
+  document
+    .getElementById("nouvelleSessionBtn")
+    ?.addEventListener("click", function () {
+      sessionStorage.removeItem("session");
+      location.reload();
+    });
+
+  // Bouton Quitter
+  document.getElementById("quitterBtn")?.addEventListener("click", function () {
+    // Fermer l'application
+    window.close();
+    // Si window.close() ne fonctionne pas (navigateur bloque)
+    document.body.innerHTML =
+      "<div style='text-align:center;padding:50px;'><h1>Application fermée</h1><p>Vous pouvez fermer cet onglet.</p></div>";
+  });
+
+  // Bouton Retour dans le panneau fin de ronde
+  document
+    .getElementById("retourFinRondeBtn")
+    ?.addEventListener("click", function () {
+      document.getElementById("finRondePanel").style.display = "none";
+      document.getElementById("releveForm").style.display = "block";
+    });
+}
+
+/**
+ * Fonction Fin Ronde - Affiche le panneau de fin de session
+ */
+function finRonde() {
+  // Masquer le formulaire et les messages
+  document.getElementById("releveForm").style.display = "none";
+  document.getElementById("message").style.display = "none";
+  document.getElementById("finRondePanel").style.display = "block";
 }
 
 /**

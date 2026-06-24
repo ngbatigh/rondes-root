@@ -580,8 +580,35 @@
             />
           </div>
 
-          <button type="submit" id="submitBtn">Valider la saisie</button>
+          <div class="btn-row-fin-ronde">
+            <button type="button" id="finRondeBtn" class="btn-fin-ronde">
+              🏁 Fin Ronde
+            </button>
+
+            <button type="submit" id="submitBtn" class="btn-valider">
+              Valider la saisie
+            </button>
+          </div>
         </form>
+
+        <!-- ==================== Panneau de Fin de Ronde ==================== -->
+        <div id="finRondePanel" class="panel" style="display: none">
+          <div class="fin-ronde-container">
+            <button id="retourFinRondeBtn" class="btn-retour">←</button>
+            <div class="fin-ronde-icon">🏁</div>
+            <h2>Fin de session</h2>
+            <p class="fin-ronde-message">Votre session est terminée.</p>
+            <p class="fin-ronde-info">
+              Les relevés ont été sauvegardés avec succès.
+            </p>
+            <div class="btn-row">
+              <button id="nouvelleSessionBtn" class="btn-primary">
+                🔄 Nouvelle Session
+              </button>
+              <button id="quitterBtn" class="btn-secondary">🚪 Quitter</button>
+            </div>
+          </div>
+        </div>
 
         <div id="message" class="message"></div>
 

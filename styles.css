@@ -414,7 +414,7 @@ hr {
 }
 
 .reset-link {
-  font-size: 11px;
+  font-size: 9px;
   color: #999;
   text-decoration: underline;
   cursor: pointer;
@@ -558,6 +558,100 @@ hr {
   background: none;
   border: none;
   padding: 0;
+}
+
+/* Bouton Fin Ronde */
+.btn-row-fin-ronde {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.btn-fin-ronde {
+  background: #e57373 !important;
+  color: white !important;
+  flex: 1;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border: none;
+  text-align: center;
+}
+
+.btn-fin-ronde:hover {
+  background: #ef5350 !important;
+}
+
+.btn-valider {
+  background: #81c784 !important;
+  color: white !important;
+  flex: 1;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border: none;
+  text-align: center;
+}
+
+.btn-valider:hover {
+  background: #66bb6a !important;
+}
+
+/* Panneau de fin */
+.fin-ronde-container {
+  text-align: center;
+  padding: 40px 20px;
+  position: relative;
+}
+
+.btn-retour {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #667eea;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  width: auto;
+  transition: background 0.2s;
+}
+
+.btn-retour:hover {
+  background: #f0f0ff;
+}
+
+.fin-ronde-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.fin-ronde-container h2 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.fin-ronde-message {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.fin-ronde-info {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 30px;
 }
 
 @media (max-width: 768px) {
