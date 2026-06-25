@@ -1,0 +1,38 @@
+- choix option B.
+- creer un variable globale de type tableau varSession["session", "id-operateur", "id=type-ronde", "id-compteur", "date-releve"].
+- creer un panneau de loging qui va stocker l'id-operateur dans varSession.
+  - le panneau de loging porte les champs nom d'utilisateur et mot de passe
+  - apres validation, si la "fonction" de l'operateur est different de "admin" appliquer la logique suivante :
+    - desactiver les panneaux :
+      - ajouterOperateurPanel
+      - modifierOperateurPanel
+      - supprimerOperateurPanel
+      - qrCodeCompteurPanel
+      - activerCompteurPanel
+      - modifierCompteurPanel
+      - clonerCompteurPanel
+      - creerCompteurPanel
+      - ajouterRondePanel
+      - supprimerRondePanel
+  - ajouter un lien "bypass->"en bas sur ce panneau de loging qui permet en mode test de contourner le loging
+- apres loging un panneau de "choix ronde" grace a des check boxe a choix unique permet de :
+  - de choisir "Revue".
+  - selectionner le type de ronde si c'est cet option qui est choisi un select type ronde aparait pour selectionner le type de ronde(obligatoire pour continuer dans ce cas), et l'enregistrer dans varSession.
+  - un bouton valider permet de passer au panneau affichant la forme actuelle de l'application.
+- sur le formulaire les champs select operateur, id_ronde et compteur sont inactifs par defaut.ils ne sont actives que pour les cas ou la valeur correspondante dans varSession est null, afin de passer la main pour une selection la liste correspondante est chargee a ce moment la.
+- inserrer une image scanner qr code (design d'un gros bouton carre) a gauche du groupe label + select du form-groupe compteur.
+- ce boutton va permettre de scanner et renvoie le compteur lu qui va etre stocke dans une variable puis actualiser le value du select afin qu'il affiche le compteur selectionne avec le statut desactivé.
+- si le scanner ne trouve pas de compteur, activer le select compteur et charger la liste des compteurs.
+- apres validation du formulaire, un panneau recap aparait avec la liste des donnes pour ce relevé a savoir:
+  - nom operateur
+  - prenom operateur
+  - ronde
+  - compteur
+  - date/heure
+  - valeur
+- un bouton confirmation permet de confirmer et un bouton annuler annuler permet d'annuler l'evenement submit
+- si confirmation, une boite de dialogue avec deux boutons aparait:
+  - bouton continuer la ronde; permet de revenir au formulaire de relevé
+  - bouton finir la ronde permet d'afficher un panneau avec la liste de tous les compteurs relevé avec les valeurs et les dates classés par heure du plus ancien au plus récent. deux bouton:
+    - fin permet de declencher un submit pour gerer l'envoie de toutes les données des relevés de la session vers le back end et fermer l'application sur confirmation
+    - nouvelle session permet de declencher toujours un submit pour gerer l'envoie de toutes les données des relevés de la session vers le back end et redemarrer l'application.
