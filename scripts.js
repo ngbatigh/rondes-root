@@ -211,9 +211,8 @@ let varSession = {
 
 let relevSession = [];
 
-// État scanner jsQR
-let isScanning = false;
-let stream = null;
+// État scanner QrScanner
+let qrScanner = null;
 let currentScanResult = null; // true ou false
 let detectedId = null;
 
@@ -861,7 +860,7 @@ function chargerFormulaire() {
 }
 
 // ============================================================
-// SCANNER QR CODE AVEC JSQR
+// SCANNER QR CODE AVEC QR-SCANNER (NIMIQ)
 // ============================================================
 
 function ouvrirScanner() {
@@ -872,76 +871,65 @@ function ouvrirScanner() {
 
 function demarrerScanner() {
   const statusDiv = document.getElementById("scannerStatus");
+  const video = document.getElementById("video");
+  const manualBtn = document.getElementById("manualEntryBtn");
+
   statusDiv.textContent = "Initialisation de la caméra...";
-  isScanning = true;
   currentScanResult = null;
   detectedId = null;
+  if (manualBtn) manualBtn.style.display = "none";
 
-  const constraints = {
-    video: { facingMode: "environment" },
-  };
+  // Configuration du chemin du worker
+  QrScanner.WORKER_PATH = "lib/qr-scanner-worker.min.js";
 
-  navigator.mediaDevices
-    .getUserMedia(constraints)
-    .then((s) => {
-      stream = s;
-      const video = document.getElementById("video");
-      video.srcObject = stream;
+  // Initialisation de QrScanner si pas encore fait
+  if (!qrScanner) {
+    qrScanner = new QrScanner(
+      video,
+      (result) => handleScanResult(result.data),
+      {
+        onDecodeError: (error) => {
+          // On ignore les erreurs de décodage habituelles (quand aucun QR n'est en vue)
+        },
+        highlightScanRegion: true,
+        highlightCodeOutline: true,
+        returnDetailedScanResult: true,
+      },
+    );
+  }
+
+  qrScanner
+    .start()
+    .then(() => {
       statusDiv.textContent = "🔍 Pointez le code QR vers la caméra";
-      requestAnimationFrame(scanVideo);
     })
     .catch((err) => {
       console.error(err);
-      statusDiv.textContent = "❌ Erreur caméra : vérifiez les permissions.";
-      isScanning = false;
+      statusDiv.innerHTML = `<span style="color: #ffc107;">⚠️ Caméra inaccessible.<br><small>Vérifiez les permissions et le protocole HTTPS.</small></span>`;
+      if (manualBtn) manualBtn.style.display = "inline-block";
     });
 }
 
-function scanVideo() {
-  const video = document.getElementById("video");
-  const canvas = document.getElementById("scanner-canvas");
+function handleScanResult(data) {
   const statusDiv = document.getElementById("scannerStatus");
+  detectedId = data;
+  const compteur = tabCompteurs.find((c) => c.id_compteur === detectedId);
 
-  if (video.readyState === video.HAVE_ENOUGH_DATA && isScanning) {
-    const ctx = canvas.getContext("2d");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    try {
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, canvas.width, canvas.height, {
-        inversionAttempts: "dontInvert",
-      });
-
-      if (code) {
-        isScanning = false; // Stop frame requests
-        if (stream) stream.getTracks().forEach((track) => track.stop()); // Stop camera
-
-        detectedId = code.data;
-        const compteur = tabCompteurs.find((c) => c.id_compteur === detectedId);
-
-        if (compteur && compteur.visible_compteur && compteur.actif_compteur) {
-          statusDiv.innerHTML = `<span style="color: #00ff00;">✅ Compteur détecté: ${compteur.nom_compteur}</span>`;
-          currentScanResult = true;
-        } else {
-          statusDiv.innerHTML = `<span style="color: #ffc107;">⚠️ Compteur non trouvé ou inactif. Mode manuel.</span>`;
-          currentScanResult = false;
-        }
-        return; // Important: do not request next frame
-      }
-    } catch (e) {}
-  }
-
-  if (isScanning) {
-    requestAnimationFrame(scanVideo);
+  if (compteur && compteur.visible_compteur && compteur.actif_compteur) {
+    statusDiv.innerHTML = `<span style="color: #00ff00;">✅ Compteur détecté : ${compteur.nom_compteur}</span>`;
+    currentScanResult = true;
+    qrScanner.stop(); // On arrête dès qu'on a un résultat valide
+  } else {
+    statusDiv.innerHTML = `<span style="color: #ffc107;">⚠️ Compteur non trouvé ou inactif (${detectedId})</span>`;
+    currentScanResult = false;
+    // On peut choisir de ne pas arrêter le scan ici pour laisser une autre chance,
+    // mais le bouton "Continuer" utilisera ce résultat.
   }
 }
 
 function stopperScannerLocal() {
-  isScanning = false;
-  if (stream) {
-    stream.getTracks().forEach((track) => track.stop());
+  if (qrScanner) {
+    qrScanner.stop();
   }
   document.getElementById("scannerPanel").style.display = "none";
 }
@@ -970,8 +958,10 @@ function actionAnnulerScan() {
   varSession["id-compteur"] = null;
 
   document.getElementById("releveForm").style.display = "block";
-  // On ne rappelle pas chargerFormulaire qui désactiverait par défaut sans id-compteur
-  // Ou on le rappelle mais il gardera disabled = false car on l'a forcé juste avant la vérif "par defaut"
+}
+
+function actionSaisieManuelle() {
+  actionAnnulerScan();
 }
 
 // ============================================================
@@ -1936,6 +1926,9 @@ function init() {
   document
     .getElementById("continuerScanBtn")
     .addEventListener("click", actionContinuerScan);
+  document
+    .getElementById("manualEntryBtn")
+    ?.addEventListener("click", actionSaisieManuelle);
 
   document
     .getElementById("confirmerRecapBtn")
