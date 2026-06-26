@@ -6,6 +6,7 @@
     <title>Gestion des Relevés de Compteurs</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   </head>
   <body>
     <div class="overlay" id="overlay"></div>
@@ -35,6 +36,207 @@
       </header>
 
       <main>
+        <!-- ==================== PANNEAU DE LOGIN ==================== -->
+        <div id="loginPanel" class="panel">
+          <div class="panel-header">
+            <h2>🔐 Connexion</h2>
+          </div>
+          <div class="form-group">
+            <label for="loginUser">Nom d'utilisateur :</label>
+            <input
+              type="text"
+              id="loginUser"
+              placeholder="Ex: gbati"
+              autocomplete="off"
+            />
+          </div>
+          <div class="form-group">
+            <label for="loginMdp">Mot de passe :</label>
+            <input type="password" id="loginMdp" placeholder="Mot de passe" />
+          </div>
+          <button id="loginBtn">✅ Se connecter</button>
+          <div style="text-align: right; margin-top: 10px">
+            <a
+              href="#"
+              id="bypassLink"
+              style="font-size: 11px; color: #999; text-decoration: underline"
+              >bypass→</a
+            >
+          </div>
+          <div id="loginMessage" class="message" style="display: none"></div>
+        </div>
+
+        <!-- ==================== PANNEAU CHOIX RONDE ==================== -->
+        <div id="choixRondePanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <h2>📋 Choix du mode</h2>
+          </div>
+          <div class="form-group">
+            <label>Type de relevé :</label>
+            <div id="choixRondeOptions">
+              <div class="check-item" style="border-left-color: #ffc107">
+                <input
+                  type="radio"
+                  name="choix_ronde"
+                  id="choixRevue"
+                  value="revue"
+                  checked
+                />
+                <label for="choixRevue" style="font-weight: 600"
+                  >📖 Revue</label
+                >
+              </div>
+              <div class="check-item" style="border-left-color: #28a745">
+                <input
+                  type="radio"
+                  name="choix_ronde"
+                  id="choixRonde"
+                  value="ronde"
+                />
+                <label for="choixRonde" style="font-weight: 600"
+                  >🆕 Nouvelle ronde</label
+                >
+              </div>
+            </div>
+          </div>
+          <div
+            id="choixTypeRondeGroup"
+            class="form-group"
+            style="display: none"
+          >
+            <label for="choixTypeRonde">Type de ronde :</label>
+            <select id="choixTypeRonde">
+              <option value="">Sélectionner un type de ronde</option>
+            </select>
+          </div>
+          <button id="validerChoixRonde">✅ Valider</button>
+        </div>
+
+        <!-- ==================== PANNEAU RÉCAPITULATIF ==================== -->
+        <div id="recapPanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <h2>📝 Récapitulatif du relevé</h2>
+          </div>
+          <div class="info-section">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">👤 Opérateur</span>
+                <span class="info-value" id="recapOperateur">-</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">🔄 Ronde</span>
+                <span class="info-value" id="recapRonde">-</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">🔢 Compteur</span>
+                <span class="info-value" id="recapCompteur">-</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">📅 Date/Heure</span>
+                <span class="info-value" id="recapDate">-</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">📊 Valeur</span>
+                <span class="info-value" id="recapValeur">-</span>
+              </div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn-secondary" id="annulerRecapBtn">
+              ❌ Annuler
+            </button>
+            <button id="confirmerRecapBtn">✅ Confirmer</button>
+          </div>
+        </div>
+
+        <!-- ==================== PANNEAU FIN DE RONDE ==================== -->
+        <div id="finRondePanel" class="panel" style="display: none">
+          <div class="panel-header">
+            <h2>🏁 Fin de ronde</h2>
+          </div>
+          <p style="margin-bottom: 16px; color: #666">
+            Liste de tous les relevés de cette session :
+          </p>
+          <div
+            id="finRondeListe"
+            style="max-height: 400px; overflow-y: auto; margin-bottom: 16px"
+          ></div>
+          <div class="btn-row" style="flex-direction: column; gap: 8px">
+            <button id="finRondeFinBtn">🏁 Fin</button>
+            <button id="finRondeNouvelleSessionBtn" class="btn-secondary">
+              🔄 Nouvelle session
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== Boîte de dialogue intermédiaire ==================== -->
+        <div id="postConfirmationDialog" class="panel" style="display: none">
+          <div class="panel-header">
+            <h2>✅ Relevé enregistré</h2>
+          </div>
+          <p style="text-align: center; margin: 16px 0; color: #666">
+            Que souhaitez-vous faire ?
+          </p>
+          <div class="btn-row" style="flex-direction: column; gap: 8px">
+            <button id="continuerRondeBtn">🔄 Continuer la ronde</button>
+            <button id="finirRondeBtn" class="btn-secondary">
+              🏁 Finir la ronde
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== SCANNER QR CODE ==================== -->
+        <div
+          id="scannerPanel"
+          class="panel scanner-section"
+          style="display: none"
+        >
+          <div
+            class="panel-header"
+            style="
+              margin-bottom: 0;
+              padding: 20px;
+              z-index: 10;
+              position: relative;
+            "
+          >
+            <h2 style="color: white; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5)">
+              📷 Scanner QR Code
+            </h2>
+          </div>
+          <video class="scanner-video" id="video" autoplay playsinline></video>
+          <div class="scanner-overlay">
+            <div class="scanner-frame"></div>
+            <p class="scanner-text" id="scannerStatus">
+              Pointez le code QR vers la caméra
+            </p>
+          </div>
+          <div
+            style="
+              position: relative;
+              z-index: 10;
+              padding: 20px;
+              background: rgba(0, 0, 0, 0.8);
+              width: 100%;
+            "
+          >
+            <div class="btn-row">
+              <button
+                class="btn-secondary"
+                id="annulerScanBtn"
+                style="
+                  background: rgba(255, 255, 255, 0.2) !important;
+                  color: white !important;
+                "
+              >
+                ❌ Annuler
+              </button>
+              <button id="continuerScanBtn">✅ Continuer</button>
+            </div>
+          </div>
+        </div>
+        <canvas id="scanner-canvas" style="display: none"></canvas>
+
         <!-- ==================== Écran d'accueil Gestion des opérateurs ==================== -->
         <div id="gestionOperateursMenu" class="panel" style="display: none">
           <div class="panel-header">
@@ -502,7 +704,7 @@
         </div>
 
         <!-- ==================== Formulaire de relevé ==================== -->
-        <form id="releveForm">
+        <form id="releveForm" style="display: none">
           <div class="form-group">
             <label for="operateur">Opérateur :</label>
             <select id="operateur" name="operateur" required>
@@ -517,11 +719,24 @@
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="compteur">Compteur :</label>
-            <select id="compteur" name="compteur" required>
-              <option value="">Sélectionner un compteur</option>
-            </select>
+          <div class="form-group compteur-group">
+            <div class="compteur-scanner-row">
+              <button
+                type="button"
+                id="scanQrBtn"
+                class="qr-scanner-btn"
+                title="Scanner un QR Code"
+              >
+                <span class="qr-scanner-icon">📷</span>
+                <span>Scanner</span>
+              </button>
+              <div class="compteur-select-wrapper">
+                <label for="compteur">Compteur :</label>
+                <select id="compteur" name="compteur" required>
+                  <option value="">Sélectionner un compteur</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div class="form-group">

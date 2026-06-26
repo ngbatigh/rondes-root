@@ -198,10 +198,29 @@ let tabCompteurs = [
 ];
 
 // ============================================================
+// VARIABLE SESSION ET ÉTAT
+// ============================================================
+let varSession = {
+  session: null, // "ronde" ou "revue"
+  "id-operateur": null,
+  "id-type-ronde": null,
+  "id-compteur": null,
+  "date-releve": null,
+  "heure-releve": null,
+};
+
+let relevSession = [];
+
+// État scanner jsQR
+let isScanning = false;
+let stream = null;
+let currentScanResult = null; // true ou false
+let detectedId = null;
+
+// ============================================================
 // FONCTIONS UTILITAIRES
 // ============================================================
 
-// Remplir un select avec un tableau de valeurs
 function fillSelectFromArray(elementId, array, emptyOption) {
   const select = document.getElementById(elementId);
   if (!select) return;
@@ -220,7 +239,6 @@ function fillSelectFromArray(elementId, array, emptyOption) {
   });
 }
 
-// Afficher un message
 function showMessage(message, type = "success") {
   const messageDiv = document.getElementById("message");
   messageDiv.textContent = message;
@@ -230,6 +248,18 @@ function showMessage(message, type = "success") {
   setTimeout(() => {
     messageDiv.style.display = "none";
     messageDiv.className = "message";
+  }, 3000);
+}
+
+function showLoginMessage(message, type = "success") {
+  const msgDiv = document.getElementById("loginMessage");
+  msgDiv.textContent = message;
+  msgDiv.className = `message ${type}`;
+  msgDiv.style.display = "block";
+
+  setTimeout(() => {
+    msgDiv.style.display = "none";
+    msgDiv.className = "message";
   }, 3000);
 }
 
@@ -290,10 +320,7 @@ function ajouterOperateur() {
   }
 
   if (tabOperateurs.some((op) => op.id_operateur === id)) {
-    showMessage(
-      `L'ID "${id}" existe déjà. Veuillez utiliser un matricule unique.`,
-      "error",
-    );
+    showMessage(`L'ID "${id}" existe déjà.`, "error");
     return;
   }
 
@@ -316,7 +343,7 @@ function ajouterOperateur() {
   userInput.value = "";
   mdpInput.value = "";
 
-  showMessage(`Opérateur "${prenom} ${nom}" ajouté avec succès !`);
+  showMessage(`Opérateur ajouté avec succès !`);
 }
 
 function handleSelectOperateurModif() {
@@ -375,10 +402,7 @@ function modifierOperateur() {
     nouvelId !== ancienId &&
     tabOperateurs.some((op) => op.id_operateur === nouvelId)
   ) {
-    showMessage(
-      `L'ID "${nouvelId}" existe déjà. Veuillez utiliser un matricule unique.`,
-      "error",
-    );
+    showMessage(`L'ID "${nouvelId}" existe déjà.`, "error");
     return;
   }
 
@@ -399,7 +423,7 @@ function modifierOperateur() {
     document.getElementById("selectOperateurModif").value = nouvelId;
     document.getElementById("ancienOperateurId").value = nouvelId;
 
-    showMessage(`Opérateur "${prenom} ${nom}" modifié avec succès !`);
+    showMessage(`Opérateur modifié avec succès !`);
   }
 }
 
@@ -532,7 +556,6 @@ function initDatabase() {
   const dateStr = yesterday.toISOString().split("T")[0];
   const heureStr = yesterday.toTimeString().split(" ")[0].substring(0, 5);
 
-  // Constantes
   sections = [...sections_default];
   famille_list = [...famille_default];
   groupe1_list = [...groupe1_default];
@@ -542,240 +565,56 @@ function initDatabase() {
   localStorage.setItem("groupe1_list", JSON.stringify(groupe1_list));
   localStorage.setItem("groupe2_list", JSON.stringify(groupe2_list));
 
-  // Types de rondes
   type_ronde = [
     {
       id_ronde: 0,
-      ronde: "Autre",
-      delai: "",
-      description_ronde: "Autres types de ronde",
+      ronde: "Relevé journalier",
+      delai: "1440",
+      description_ronde: "relevé de tous les compteurs chaque matin",
     },
     {
       id_ronde: 1,
-      ronde: "Relevé journalier",
-      delai: "1440",
-      description_ronde:
-        "relevé de tous les compteurs chaque matin aux alentours de 06:00",
-    },
-    {
-      id_ronde: 2,
       ronde: "Relevé de quart",
       delai: "480",
-      description_ronde:
-        "relevé de tous les compteurs chaque quart de 8 heures",
+      description_ronde: "relevé de tous les compteurs chaque quart",
     },
   ];
   localStorage.setItem("type_ronde", JSON.stringify(type_ronde));
 
-  // Opérateurs par défaut
   tabOperateurs = [
     {
       id_operateur: "966",
       nom_operateur: "NADJOMBE",
       prenom_operateur: "Gbati",
-      fonction_operateur: "Chef Service",
-      nomuser_operateur: "gbati",
+      fonction_operateur: "admin",
+      nomuser_operateur: "gbati@nadjombe",
       motdepasse_operateur: "admin",
     },
     {
       id_operateur: "877",
       nom_operateur: "KPAKPA",
       prenom_operateur: "Tam",
-      fonction_operateur: "Machiniste",
-      nomuser_operateur: "",
+      fonction_operateur: "operateur",
+      nomuser_operateur: "tam@kpakpa",
       motdepasse_operateur: "123456",
     },
     {
       id_operateur: "935",
       nom_operateur: "TSOGBE",
       prenom_operateur: "Alain",
-      fonction_operateur: "Chef d'Equipe SDM",
-      nomuser_operateur: "alain",
+      fonction_operateur: "operateur",
+      nomuser_operateur: "alain@tsogbe",
       motdepasse_operateur: "123456",
     },
   ];
   localStorage.setItem("tabOperateurs", JSON.stringify(tabOperateurs));
 
-  // Compteurs (9 objets)
-  tabCompteurs = [
-    {
-      id_compteur: "A-0000-0000-0000-0001",
-      nom_compteur: "eau mitige laveuse",
-      unite_compteur: "m3",
-      debut_compteur: 7.0,
-      range_compteur: 1000000.0,
-      section_compteur: "Embouteillage",
-      famille_compteur: "Eau",
-      groupe1_compteur: "A",
-      groupe2_compteur: "1",
-      enservice_compteur: "2026-06-01 00:00:00",
-      visible_compteur: true,
-      actif_compteur: true,
-      description_compteur: "compteur eau",
-    },
-    {
-      id_compteur: "B-0000-0000-0000-0001",
-      nom_compteur: "eau mitige laveuse",
-      unite_compteur: "m3",
-      debut_compteur: 7.0,
-      range_compteur: 1000000.0,
-      section_compteur: "Embouteillage",
-      famille_compteur: "Eau",
-      groupe1_compteur: "A",
-      groupe2_compteur: "1",
-      enservice_compteur: "",
-      visible_compteur: true,
-      actif_compteur: false,
-      description_compteur: "compteur eau",
-    },
-    {
-      id_compteur: "C-0000-0000-0000-0001",
-      nom_compteur: "eau mitige laveuse",
-      unite_compteur: "m3",
-      debut_compteur: 7.0,
-      range_compteur: 1000000.0,
-      section_compteur: "Embouteillage",
-      famille_compteur: "Eau",
-      groupe1_compteur: "A",
-      groupe2_compteur: "1",
-      enservice_compteur: "",
-      visible_compteur: true,
-      actif_compteur: false,
-      description_compteur: "compteur eau",
-    },
-    {
-      id_compteur: "A-0000-0000-0000-0010",
-      nom_compteur: "electricite Axima",
-      unite_compteur: "kwh",
-      debut_compteur: 12.0,
-      range_compteur: 1000000.0,
-      section_compteur: "Salle Des Machines",
-      famille_compteur: "Energie",
-      groupe1_compteur: "A",
-      groupe2_compteur: "1",
-      enservice_compteur: "2026-06-20 00:00:00",
-      visible_compteur: true,
-      actif_compteur: true,
-      description_compteur: "compteur d'électricité",
-    },
-    {
-      id_compteur: "B-0000-0000-0000-0010",
-      nom_compteur: "electricite Axima",
-      unite_compteur: "kwh",
-      debut_compteur: 12.0,
-      range_compteur: 1000000.0,
-      section_compteur: "Salle Des Machines",
-      famille_compteur: "Energie",
-      groupe1_compteur: "A",
-      groupe2_compteur: "1",
-      enservice_compteur: "",
-      visible_compteur: true,
-      actif_compteur: false,
-      description_compteur: "compteur d'électricité",
-    },
-    {
-      id_compteur: "C-0000-0000-0000-0010",
-      nom_compteur: "electricite Axima",
-      unite_compteur: "kwh",
-      debut_compteur: 12.0,
-      range_compteur: 1000000.0,
-      section_compteur: "Salle Des Machines",
-      famille_compteur: "Energie",
-      groupe1_compteur: "A",
-      groupe2_compteur: "1",
-      enservice_compteur: "",
-      visible_compteur: true,
-      actif_compteur: false,
-      description_compteur: "compteur d'électricité",
-    },
-    {
-      id_compteur: "A-0000-0000-0000-0011",
-      nom_compteur: "temperature glycole",
-      unite_compteur: "°C",
-      debut_compteur: -4.0,
-      range_compteur: 1000000.0,
-      section_compteur: "Salle Des Machines",
-      famille_compteur: "Temperature",
-      groupe1_compteur: "F",
-      groupe2_compteur: "1",
-      enservice_compteur: "2026-06-19 00:00:00",
-      visible_compteur: true,
-      actif_compteur: true,
-      description_compteur: "Thermometre ligne glycole",
-    },
-    {
-      id_compteur: "B-0000-0000-0000-0011",
-      nom_compteur: "temperature glycole",
-      unite_compteur: "°C",
-      debut_compteur: -4.0,
-      range_compteur: 1000000.0,
-      section_compteur: "Salle Des Machines",
-      famille_compteur: "Temperature",
-      groupe1_compteur: "F",
-      groupe2_compteur: "1",
-      enservice_compteur: "",
-      visible_compteur: true,
-      actif_compteur: false,
-      description_compteur: "Thermometre ligne glycole",
-    },
-    {
-      id_compteur: "C-0000-0000-0000-0011",
-      nom_compteur: "temperature glycole",
-      unite_compteur: "°C",
-      debut_compteur: -4.0,
-      range_compteur: 1000000.0,
-      section_compteur: "Salle Des Machines",
-      famille_compteur: "Temperature",
-      groupe1_compteur: "F",
-      groupe2_compteur: "1",
-      enservice_compteur: "",
-      visible_compteur: true,
-      actif_compteur: false,
-      description_compteur: "Thermometre ligne glycole",
-    },
-  ];
   localStorage.setItem("tabCompteurs", JSON.stringify(tabCompteurs));
 
-  // Relevés de test avec les vrais IDs de compteurs
-  rondeDB = {
-    "A-0000-0000-0000-0001": [
-      {
-        id_ronde: 0,
-        id_operateur: "Koffi",
-        id_compteur: "A-0000-0000-0000-0001",
-        valeur: 1250,
-        date: dateStr,
-        heure: heureStr,
-        commentaire: "",
-      },
-    ],
-    "A-0000-0000-0000-0010": [
-      {
-        id_ronde: 0,
-        id_operateur: "Gbati",
-        id_compteur: "A-0000-0000-0000-0010",
-        valeur: 3450,
-        date: dateStr,
-        heure: heureStr,
-        commentaire: "",
-      },
-    ],
-    "A-0000-0000-0000-0011": [
-      {
-        id_ronde: 1,
-        id_operateur: "Abalo",
-        id_compteur: "A-0000-0000-0000-0011",
-        valeur: -4,
-        date: dateStr,
-        heure: heureStr,
-        commentaire: "",
-      },
-    ],
-  };
+  rondeDB = {};
   localStorage.setItem("rondeDB", JSON.stringify(rondeDB));
 }
 
-// Remplir le select des types de ronde
 function fillRondeSelect() {
   const select = document.getElementById("id_ronde");
   if (!select) return;
@@ -788,7 +627,18 @@ function fillRondeSelect() {
   });
 }
 
-// Remplir le select des compteurs (depuis tabCompteurs, uniquement ceux visibles ET actifs)
+function fillChoixTypeRondeSelect() {
+  const select = document.getElementById("choixTypeRonde");
+  if (!select) return;
+  select.innerHTML = '<option value="">Sélectionner un type de ronde</option>';
+  type_ronde.forEach((r) => {
+    const option = document.createElement("option");
+    option.value = r.id_ronde;
+    option.textContent = r.ronde;
+    select.appendChild(option);
+  });
+}
+
 function fillCompteurSelect() {
   const select = document.getElementById("compteur");
   if (!select) return;
@@ -803,7 +653,6 @@ function fillCompteurSelect() {
     });
 }
 
-// Sauvegarder un relevé
 function saveReleve(id_ronde, id_operateur, id_compteur, valeur) {
   const now = new Date();
   const dateStr = now.toISOString().split("T")[0];
@@ -827,13 +676,529 @@ function saveReleve(id_ronde, id_operateur, id_compteur, valeur) {
 }
 
 // ============================================================
+// LOGIN / SESSION (tâche 2)
+// ============================================================
+
+function handleLogin() {
+  const userInput = document.getElementById("loginUser").value.trim();
+  const mdpInput = document.getElementById("loginMdp").value.trim();
+
+  if (!userInput || !mdpInput) {
+    showLoginMessage(
+      "Veuillez saisir votre nom d'utilisateur et mot de passe",
+      "error",
+    );
+    return;
+  }
+
+  const operateur = tabOperateurs.find(
+    (op) =>
+      op.nomuser_operateur === userInput &&
+      op.motdepasse_operateur === mdpInput,
+  );
+
+  if (!operateur) {
+    showLoginMessage("Identifiants incorrects", "error");
+    return;
+  }
+
+  varSession["id-operateur"] = operateur.id_operateur;
+
+  // Appliquer restrictions admin
+  applyAdminRestrictions(operateur);
+
+  document.getElementById("loginPanel").style.display = "none";
+  document.getElementById("choixRondePanel").style.display = "block";
+  fillChoixTypeRondeSelect();
+}
+
+function bypassLogin() {
+  if (tabOperateurs.length > 0) {
+    varSession["id-operateur"] = tabOperateurs[0].id_operateur;
+    applyAdminRestrictions(tabOperateurs[0]);
+
+    document.getElementById("loginPanel").style.display = "none";
+    document.getElementById("choixRondePanel").style.display = "block";
+    fillChoixTypeRondeSelect();
+  } else {
+    showLoginMessage("Aucun opérateur disponible", "error");
+  }
+}
+
+function applyAdminRestrictions(operateur) {
+  const fonction = (operateur.fonction_operateur || "").toLowerCase();
+  const isAdmin =
+    fonction === "admin" ||
+    fonction === "chef service" ||
+    fonction === "superviseur";
+
+  if (!isAdmin) {
+    document.querySelectorAll(".sidebar-menu a").forEach((link) => {
+      const action = link.dataset.action;
+      if (
+        action === "operateurs" ||
+        action === "compteurs" ||
+        action === "rondes"
+      ) {
+        link.style.display = "none";
+      }
+    });
+  }
+}
+
+// ============================================================
+// CHOIX RONDE / REVUE
+// ============================================================
+
+function setupChoixRonde() {
+  document.querySelectorAll('input[name="choix_ronde"]').forEach((radio) => {
+    radio.addEventListener("change", function () {
+      const typeRondeGroup = document.getElementById("choixTypeRondeGroup");
+      if (this.value === "ronde") {
+        typeRondeGroup.style.display = "block";
+      } else {
+        typeRondeGroup.style.display = "none";
+      }
+    });
+  });
+
+  document
+    .getElementById("validerChoixRonde")
+    .addEventListener("click", function () {
+      const choix = document.querySelector(
+        'input[name="choix_ronde"]:checked',
+      )?.value;
+
+      if (!choix) {
+        showMessage("Veuillez choisir un mode", "error");
+        return;
+      }
+
+      varSession["session"] = choix;
+
+      if (choix === "ronde") {
+        const typeRonde = document.getElementById("choixTypeRonde").value;
+        if (!typeRonde) {
+          showMessage("Veuillez sélectionner un type de ronde", "error");
+          return;
+        }
+        varSession["id-type-ronde"] = parseInt(typeRonde);
+        document.getElementById("id_ronde").value = typeRonde;
+        document.getElementById("id_ronde").disabled = true;
+      } else {
+        varSession["id-type-ronde"] = null;
+        document.getElementById("id_ronde").disabled = false;
+      }
+
+      // Initialiser les dates
+      const now = new Date();
+      varSession["date-releve"] = now.toISOString().split("T")[0];
+      varSession["heure-releve"] = now
+        .toTimeString()
+        .split(" ")[0]
+        .substring(0, 5);
+
+      document.getElementById("choixRondePanel").style.display = "none";
+      document.getElementById("releveForm").style.display = "block";
+      chargerFormulaire();
+    });
+}
+
+// ============================================================
+// FORMULAIRE ADAPTATIF
+// ============================================================
+
+function chargerFormulaire() {
+  // L'opérateur est toujours verrouillé après login
+  document.getElementById("operateur").disabled = true;
+  if (varSession["id-operateur"]) {
+    document.getElementById("operateur").value = varSession["id-operateur"];
+  }
+
+  // Le type de ronde est verrouillé si "ronde" a été choisi
+  if (
+    varSession["id-type-ronde"] !== null &&
+    varSession["id-type-ronde"] !== undefined
+  ) {
+    document.getElementById("id_ronde").value = varSession["id-type-ronde"];
+    document.getElementById("id_ronde").disabled = true;
+  } else {
+    document.getElementById("id_ronde").disabled = false;
+  }
+
+  // Le select compteur est inactif par défaut
+  const selectCompteur = document.getElementById("compteur");
+  if (varSession["id-compteur"]) {
+    // Cas du scan réussi : on s'assure qu'il est dans la liste et on le verrouille
+    const compteurTrouve = tabCompteurs.find(
+      (c) => c.id_compteur === varSession["id-compteur"],
+    );
+    if (compteurTrouve) {
+      let optionExists = Array.from(selectCompteur.options).some(
+        (opt) => opt.value === varSession["id-compteur"],
+      );
+      if (!optionExists) {
+        const opt = document.createElement("option");
+        opt.value = varSession["id-compteur"];
+        opt.textContent = `${compteurTrouve.id_compteur} — ${compteurTrouve.nom_compteur}`;
+        selectCompteur.appendChild(opt);
+      }
+      selectCompteur.value = varSession["id-compteur"];
+      selectCompteur.disabled = true;
+    } else {
+      fillCompteurSelect();
+      selectCompteur.disabled = false;
+      varSession["id-compteur"] = null;
+    }
+  } else {
+    // Par défaut ou si aucun scan réussi, il est inactif (verrouillé vide)
+    // Sauf si on vient de cliquer sur Annuler et qu'on l'a explicitement activé
+    if (selectCompteur.disabled !== false) {
+      selectCompteur.value = "";
+      selectCompteur.disabled = true;
+    }
+  }
+}
+
+// ============================================================
+// SCANNER QR CODE AVEC JSQR
+// ============================================================
+
+function ouvrirScanner() {
+  document.getElementById("releveForm").style.display = "none";
+  document.getElementById("scannerPanel").style.display = "flex";
+  demarrerScanner();
+}
+
+function demarrerScanner() {
+  const statusDiv = document.getElementById("scannerStatus");
+  statusDiv.textContent = "Initialisation de la caméra...";
+  isScanning = true;
+  currentScanResult = null;
+  detectedId = null;
+
+  const constraints = {
+    video: { facingMode: "environment" },
+  };
+
+  navigator.mediaDevices
+    .getUserMedia(constraints)
+    .then((s) => {
+      stream = s;
+      const video = document.getElementById("video");
+      video.srcObject = stream;
+      statusDiv.textContent = "🔍 Pointez le code QR vers la caméra";
+      requestAnimationFrame(scanVideo);
+    })
+    .catch((err) => {
+      console.error(err);
+      statusDiv.textContent = "❌ Erreur caméra : vérifiez les permissions.";
+      isScanning = false;
+    });
+}
+
+function scanVideo() {
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("scanner-canvas");
+  const statusDiv = document.getElementById("scannerStatus");
+
+  if (video.readyState === video.HAVE_ENOUGH_DATA && isScanning) {
+    const ctx = canvas.getContext("2d");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    try {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, canvas.width, canvas.height, {
+        inversionAttempts: "dontInvert",
+      });
+
+      if (code) {
+        isScanning = false; // Stop frame requests
+        if (stream) stream.getTracks().forEach((track) => track.stop()); // Stop camera
+
+        detectedId = code.data;
+        const compteur = tabCompteurs.find((c) => c.id_compteur === detectedId);
+
+        if (compteur && compteur.visible_compteur && compteur.actif_compteur) {
+          statusDiv.innerHTML = `<span style="color: #00ff00;">✅ Compteur détecté: ${compteur.nom_compteur}</span>`;
+          currentScanResult = true;
+        } else {
+          statusDiv.innerHTML = `<span style="color: #ffc107;">⚠️ Compteur non trouvé ou inactif. Mode manuel.</span>`;
+          currentScanResult = false;
+        }
+        return; // Important: do not request next frame
+      }
+    } catch (e) {}
+  }
+
+  if (isScanning) {
+    requestAnimationFrame(scanVideo);
+  }
+}
+
+function stopperScannerLocal() {
+  isScanning = false;
+  if (stream) {
+    stream.getTracks().forEach((track) => track.stop());
+  }
+  document.getElementById("scannerPanel").style.display = "none";
+}
+
+function actionContinuerScan() {
+  stopperScannerLocal();
+  if (currentScanResult === true && detectedId) {
+    varSession["id-compteur"] = detectedId;
+    document.getElementById("compteur").disabled = true;
+  } else {
+    // Si aucun scan ou scan invalide, la continuation n'active pas forcément,
+    // ou on l'active explicitement pour saisie manuelle si le code n'est pas reconnu.
+    fillCompteurSelect();
+    document.getElementById("compteur").disabled = false;
+    varSession["id-compteur"] = null;
+  }
+  document.getElementById("releveForm").style.display = "block";
+  chargerFormulaire();
+}
+
+function actionAnnulerScan() {
+  stopperScannerLocal();
+  // Active le select et charge la liste
+  fillCompteurSelect();
+  document.getElementById("compteur").disabled = false;
+  varSession["id-compteur"] = null;
+
+  document.getElementById("releveForm").style.display = "block";
+  // On ne rappelle pas chargerFormulaire qui désactiverait par défaut sans id-compteur
+  // Ou on le rappelle mais il gardera disabled = false car on l'a forcé juste avant la vérif "par defaut"
+}
+
+// ============================================================
+// RÉCAPITULATIF
+// ============================================================
+
+function handleSubmit(event) {
+  event.preventDefault();
+  const id_ronde = document.getElementById("id_ronde").value;
+  const operateur = document.getElementById("operateur").value;
+  const compteur = document.getElementById("compteur").value;
+  const valeurActuelle = parseFloat(
+    document.getElementById("valeurActuelle").value,
+  );
+
+  if (!id_ronde || !operateur || !compteur || isNaN(valeurActuelle)) {
+    showMessage("Veuillez remplir tous les champs obligatoires", "error");
+    return;
+  }
+
+  varSession["id-compteur"] = compteur;
+  varSession["id-type-ronde"] = parseInt(id_ronde);
+  varSession["id-operateur"] = operateur;
+
+  const op = tabOperateurs.find((o) => o.id_operateur === operateur);
+  const rondeObj = type_ronde.find((r) => r.id_ronde === parseInt(id_ronde));
+  const compteurObj = tabCompteurs.find((c) => c.id_compteur === compteur);
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("fr-FR");
+  const heureStr = now.toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  document.getElementById("recapOperateur").textContent = op
+    ? `${op.prenom_operateur} ${op.nom_operateur}`
+    : operateur;
+  document.getElementById("recapRonde").textContent = rondeObj
+    ? rondeObj.ronde
+    : id_ronde;
+  document.getElementById("recapCompteur").textContent = compteurObj
+    ? `${compteurObj.id_compteur} — ${compteurObj.nom_compteur}`
+    : compteur;
+  document.getElementById("recapDate").textContent = `${dateStr} à ${heureStr}`;
+  document.getElementById("recapValeur").textContent = valeurActuelle;
+
+  recapData = {
+    id_ronde: parseInt(id_ronde),
+    id_operateur: operateur,
+    id_compteur: compteur,
+    valeur: valeurActuelle,
+  };
+
+  document.getElementById("releveForm").style.display = "none";
+  document.getElementById("recapPanel").style.display = "block";
+}
+
+let recapData = null;
+
+// ============================================================
+// POST-CONFIRMATION
+// ============================================================
+
+function confirmerReleve() {
+  if (!recapData) return;
+
+  saveReleve(
+    recapData.id_ronde,
+    recapData.id_operateur,
+    recapData.id_compteur,
+    recapData.valeur,
+  );
+
+  const now = new Date();
+  relevSession.push({
+    ...recapData,
+    date: now.toISOString().split("T")[0],
+    heure: now.toTimeString().split(" ")[0].substring(0, 5),
+    dateDisplay: now.toLocaleDateString("fr-FR"),
+    heureDisplay: now.toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    operateurNom: document.getElementById("recapOperateur").textContent,
+    rondeNom: document.getElementById("recapRonde").textContent,
+    compteurDisplay: document.getElementById("recapCompteur").textContent,
+  });
+
+  recapData = null;
+  document.getElementById("recapPanel").style.display = "none";
+  document.getElementById("postConfirmationDialog").style.display = "block";
+}
+
+function annulerReleve() {
+  recapData = null;
+  document.getElementById("recapPanel").style.display = "none";
+  document.getElementById("releveForm").style.display = "block";
+}
+
+function continuerRonde() {
+  document.getElementById("postConfirmationDialog").style.display = "none";
+  document.getElementById("releveForm").style.display = "block";
+  document.getElementById("valeurActuelle").value = "";
+
+  // Le compteur doit être réinitialisé et inactif pour forcer un nouveau scan
+  varSession["id-compteur"] = null;
+  document.getElementById("compteur").disabled = true;
+  document.getElementById("compteur").value = "";
+  chargerFormulaire();
+}
+
+function finirRonde() {
+  document.getElementById("postConfirmationDialog").style.display = "none";
+  afficherFinRonde();
+}
+
+// ============================================================
+// PANNEAU FIN DE RONDE
+// ============================================================
+
+function afficherFinRonde() {
+  const sortedReleves = [...relevSession].sort((a, b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return a.heure.localeCompare(b.heure);
+  });
+
+  const container = document.getElementById("finRondeListe");
+  container.innerHTML = "";
+
+  if (sortedReleves.length === 0) {
+    container.innerHTML =
+      '<p style="text-align: center; color: #666;">Aucun relevé effectué.</p>';
+  } else {
+    let html = '<table class="table-releves">';
+    html +=
+      "<thead><tr><th>N°</th><th>Op.</th><th>Ronde</th><th>Compteur</th><th>Heure</th><th>Val.</th></tr></thead><tbody>";
+    sortedReleves.forEach((r, index) => {
+      html += `<tr>
+        <td>${index + 1}</td>
+        <td>${r.operateurNom}</td>
+        <td>${r.rondeNom}</td>
+        <td>${r.compteurDisplay}</td>
+        <td>${r.heureDisplay}</td>
+        <td class="valeur-cell">${r.valeur}</td>
+      </tr>`;
+    });
+    html += "</tbody></table>";
+    container.innerHTML = html;
+  }
+
+  document.getElementById("finRondePanel").style.display = "block";
+}
+
+function finRondeFin() {
+  if (confirm("Confirmer l'envoi de tous les relevés de la session ?")) {
+    const jsonData = JSON.stringify(
+      { session: varSession, releves: relevSession },
+      null,
+      2,
+    );
+    console.log("📤 POST Backend:", jsonData);
+    showMessage(`✅ ${relevSession.length} relevé(s) envoyé(s) avec succès !`);
+
+    setTimeout(() => {
+      if (confirm("L'application va être fermée.")) {
+        document.getElementById("finRondePanel").style.display = "none";
+        reinitialiserApplication();
+      }
+    }, 500);
+  }
+}
+
+function finRondeNouvelleSession() {
+  if (
+    confirm("Confirmer l'envoi des relevés et démarrer une nouvelle session ?")
+  ) {
+    const jsonData = JSON.stringify(
+      { session: varSession, releves: relevSession },
+      null,
+      2,
+    );
+    console.log("📤 POST Backend:", jsonData);
+    showMessage(
+      `✅ ${relevSession.length} relevé(s) envoyé(s) ! Redémarrage...`,
+    );
+
+    setTimeout(() => {
+      reinitialiserApplication();
+    }, 1000);
+  }
+}
+
+function reinitialiserApplication() {
+  varSession = {
+    session: null,
+    "id-operateur": null,
+    "id-type-ronde": null,
+    "id-compteur": null,
+    "date-releve": null,
+    "heure-releve": null,
+  };
+  relevSession = [];
+  recapData = null;
+
+  document.getElementById("operateur").disabled = true;
+  document.getElementById("id_ronde").disabled = true;
+  document.getElementById("compteur").disabled = true;
+  document.getElementById("valeurActuelle").value = "";
+
+  document.getElementById("finRondePanel").style.display = "none";
+  document.getElementById("releveForm").style.display = "none";
+  document.getElementById("loginPanel").style.display = "block";
+  document.getElementById("loginUser").value = "";
+  document.getElementById("loginMdp").value = "";
+
+  document.querySelectorAll(".sidebar-menu a").forEach((link) => {
+    link.style.display = "block";
+  });
+}
+
+// ============================================================
 // AFFICHAGE DES PANNEAUX
 // ============================================================
 
 function showPanel(panelId) {
   const form = document.getElementById("releveForm");
 
-  // Opérateurs
   const operateursMenu = document.getElementById("gestionOperateursMenu");
   const ajouterOperateurPanel = document.getElementById(
     "ajouterOperateurPanel",
@@ -845,12 +1210,10 @@ function showPanel(panelId) {
     "supprimerOperateurPanel",
   );
 
-  // Rondes
   const rondesMenu = document.getElementById("gestionRondesMenu");
   const ajouterRonde = document.getElementById("ajouterRondePanel");
   const supprimerRonde = document.getElementById("supprimerRondePanel");
 
-  // Compteurs
   const compteursMenu = document.getElementById("gestionCompteursMenu");
   const activerCompteur = document.getElementById("activerCompteurPanel");
   const modifierCompteur = document.getElementById("modifierCompteurPanel");
@@ -858,7 +1221,6 @@ function showPanel(panelId) {
   const creerCompteur = document.getElementById("creerCompteurPanel");
   const qrCodeCompteur = document.getElementById("qrCodeCompteurPanel");
 
-  // Masquer tous
   const allPanels = [
     form,
     operateursMenu,
@@ -879,9 +1241,7 @@ function showPanel(panelId) {
     if (p) p.style.display = "none";
   });
 
-  // Afficher le bon panneau
   if (panelId === "releveForm") form.style.display = "block";
-  // --- Opérateurs ---
   else if (panelId === "gestionOperateursMenu") {
     if (operateursMenu) operateursMenu.style.display = "block";
   } else if (panelId === "ajouterOperateurPanel") {
@@ -892,17 +1252,14 @@ function showPanel(panelId) {
     if (supprimerOperateurPanel)
       supprimerOperateurPanel.style.display = "block";
     renderOperateursCheckList();
-  }
-  // --- Rondes ---
-  else if (panelId === "gestionRondesMenu") rondesMenu.style.display = "block";
+  } else if (panelId === "gestionRondesMenu")
+    rondesMenu.style.display = "block";
   else if (panelId === "ajouterRondePanel")
     ajouterRonde.style.display = "block";
   else if (panelId === "supprimerRondePanel") {
     supprimerRonde.style.display = "block";
     renderRondesCheckList();
-  }
-  // --- Compteurs ---
-  else if (panelId === "gestionCompteursMenu")
+  } else if (panelId === "gestionCompteursMenu")
     compteursMenu.style.display = "block";
   else if (panelId === "activerCompteurPanel") {
     activerCompteur.style.display = "block";
@@ -978,7 +1335,7 @@ function setupSidebar() {
 }
 
 // ============================================================
-// GESTION DES RONDES
+// GESTION DES RONDES, COMPTEURS ET AUTRES FONCTIONS CRUD
 // ============================================================
 
 function renderRondesCheckList() {
@@ -1012,7 +1369,6 @@ function ajouterRonde() {
   const nomInput = document.getElementById("nouvelleRondeNom");
   const delaiInput = document.getElementById("nouvelleRondeDelai");
   const descInput = document.getElementById("nouvelleRondeDescription");
-
   const nom = nomInput?.value?.trim();
   const delai = delaiInput?.value?.trim();
   const description = descInput?.value?.trim();
@@ -1021,24 +1377,19 @@ function ajouterRonde() {
     showMessage("Veuillez remplir au moins le nom et le délai", "error");
     return;
   }
-
   const maxId =
     type_ronde.length > 0 ? Math.max(...type_ronde.map((r) => r.id_ronde)) : -1;
-
   type_ronde.push({
     id_ronde: maxId + 1,
     ronde: nom,
     delai: delai,
     description_ronde: description || "",
   });
-
   localStorage.setItem("type_ronde", JSON.stringify(type_ronde));
   fillRondeSelect();
-
   if (nomInput) nomInput.value = "";
   if (delaiInput) delaiInput.value = "";
   if (descInput) descInput.value = "";
-
   showMessage(`Ronde "${nom}" ajoutée avec succès !`);
 }
 
@@ -1050,16 +1401,13 @@ function supprimerRondesSelection() {
     showMessage("Veuillez sélectionner au moins une ronde", "error");
     return;
   }
-
   const idsToDelete = [];
   checkboxes.forEach((cb) => idsToDelete.push(parseInt(cb.value)));
   const noms = type_ronde
     .filter((r) => idsToDelete.includes(r.id_ronde))
     .map((r) => r.ronde);
-
   if (!confirm(`Supprimer ${noms.length} ronde(s) :\n${noms.join(", ")} ?`))
     return;
-
   type_ronde = type_ronde.filter((r) => !idsToDelete.includes(r.id_ronde));
   localStorage.setItem("type_ronde", JSON.stringify(type_ronde));
   renderRondesCheckList();
@@ -1074,7 +1422,6 @@ function setupGestionRondes() {
   document
     .getElementById("goToSupprimerRonde")
     ?.addEventListener("click", () => showPanel("supprimerRondePanel"));
-
   document
     .getElementById("backFromRondesMenu")
     ?.addEventListener("click", () => showPanel("releveForm"));
@@ -1087,7 +1434,6 @@ function setupGestionRondes() {
   document
     .getElementById("annulerAjouter")
     ?.addEventListener("click", () => showPanel("gestionRondesMenu"));
-
   document
     .getElementById("ajouterRondeBtn")
     ?.addEventListener("click", ajouterRonde);
@@ -1096,39 +1442,29 @@ function setupGestionRondes() {
     ?.addEventListener("click", supprimerRondesSelection);
 }
 
-// ============================================================
-// GESTION DES COMPTEURS
-// ============================================================
-
-// ----- Activer compteur -----
 function renderActiverCheckList() {
   const container = document.getElementById("activerCheckList");
   if (!container) return;
   container.innerHTML = "";
-
   if (tabCompteurs.length === 0) {
     container.innerHTML =
       '<p style="color: #666; font-style: italic; text-align: center; padding: 20px;">Aucun compteur.</p>';
     return;
   }
-
   tabCompteurs.forEach((c, index) => {
     const div = document.createElement("div");
     div.className = "check-item";
     div.style.flexDirection = "column";
     div.style.alignItems = "stretch";
-
     const header = document.createElement("div");
     header.style.display = "flex";
     header.style.justifyContent = "space-between";
     header.style.alignItems = "center";
     header.style.marginBottom = "8px";
-
     const info = document.createElement("span");
     info.style.fontWeight = "600";
     info.textContent = `${c.id_compteur} — ${c.nom_compteur}`;
     header.appendChild(info);
-
     const badge = document.createElement("span");
     badge.style.fontSize = "12px";
     badge.style.padding = "2px 8px";
@@ -1149,11 +1485,9 @@ function renderActiverCheckList() {
     }
     header.appendChild(badge);
     div.appendChild(header);
-
     const row = document.createElement("div");
     row.style.display = "flex";
     row.style.gap = "20px";
-
     const cbVisible = document.createElement("label");
     cbVisible.style.cursor = "pointer";
     cbVisible.style.fontWeight = "500";
@@ -1164,7 +1498,6 @@ function renderActiverCheckList() {
     inputVisible.dataset.field = "visible_compteur";
     cbVisible.appendChild(inputVisible);
     cbVisible.appendChild(document.createTextNode(" 👁️ Visible"));
-
     const cbActif = document.createElement("label");
     cbActif.style.cursor = "pointer";
     cbActif.style.fontWeight = "500";
@@ -1175,11 +1508,9 @@ function renderActiverCheckList() {
     inputActif.dataset.field = "actif_compteur";
     cbActif.appendChild(inputActif);
     cbActif.appendChild(document.createTextNode(" ✅ Actif"));
-
     row.appendChild(cbVisible);
     row.appendChild(cbActif);
     div.appendChild(row);
-
     container.appendChild(div);
   });
 }
@@ -1195,7 +1526,6 @@ function enregistrerActiver() {
       tabCompteurs[idx][field] = cb.checked;
     }
   });
-
   tabCompteurs.forEach((c) => {
     if (c.actif_compteur && !c.enservice_compteur) {
       c.enservice_compteur = new Date()
@@ -1207,14 +1537,12 @@ function enregistrerActiver() {
       c.enservice_compteur = "";
     }
   });
-
   localStorage.setItem("tabCompteurs", JSON.stringify(tabCompteurs));
   fillCompteurSelect();
   renderActiverCheckList();
   showMessage("Modifications enregistrées.");
 }
 
-// ----- Modifier compteur -----
 function remplirSelectModifier() {
   const select = document.getElementById("modifierSelectCompteur");
   if (!select) return;
@@ -1242,7 +1570,6 @@ function chargerCompteurDansFormModifier() {
     return;
   }
   container.style.display = "block";
-
   document.getElementById("modifierIdCompteur").value = c.id_compteur;
   document.getElementById("modifierNom").value = c.nom_compteur;
   document.getElementById("modifierUnite").value = c.unite_compteur;
@@ -1251,12 +1578,10 @@ function chargerCompteurDansFormModifier() {
   document.getElementById("modifierDescription").value = c.description_compteur;
   document.getElementById("modifierVisible").checked = c.visible_compteur;
   document.getElementById("modifierActif").checked = c.actif_compteur;
-
   fillSelectFromArray("modifierSection", sections, "Sélectionner...");
   fillSelectFromArray("modifierFamille", famille_list, "Sélectionner...");
   fillSelectFromArray("modifierGroupe1", groupe1_list, "Sélectionner...");
   fillSelectFromArray("modifierGroupe2", groupe2_list, "Sélectionner...");
-
   document.getElementById("modifierSection").value = c.section_compteur;
   document.getElementById("modifierFamille").value = c.famille_compteur;
   document.getElementById("modifierGroupe1").value = c.groupe1_compteur;
@@ -1271,14 +1596,11 @@ function enregistrerModification() {
   }
   const c = tabCompteurs.find((x) => x.id_compteur === id);
   if (!c) return;
-
   const newId = document.getElementById("modifierIdCompteur").value.trim();
-
   if (newId !== id && tabCompteurs.find((x) => x.id_compteur === newId)) {
     showMessage("Cet ID existe déjà.", "error");
     return;
   }
-
   c.id_compteur = newId;
   c.nom_compteur = document.getElementById("modifierNom").value;
   c.unite_compteur = document.getElementById("modifierUnite").value;
@@ -1291,7 +1613,6 @@ function enregistrerModification() {
   c.description_compteur = document.getElementById("modifierDescription").value;
   c.visible_compteur = document.getElementById("modifierVisible").checked;
   c.actif_compteur = document.getElementById("modifierActif").checked;
-
   if (c.actif_compteur && !c.enservice_compteur) {
     c.enservice_compteur = new Date()
       .toISOString()
@@ -1299,14 +1620,12 @@ function enregistrerModification() {
       .replace("T", " ");
   }
   if (!c.actif_compteur) c.enservice_compteur = "";
-
   localStorage.setItem("tabCompteurs", JSON.stringify(tabCompteurs));
   fillCompteurSelect();
   remplirSelectModifier();
   showMessage(`Compteur "${newId}" modifié.`);
 }
 
-// ----- Cloner compteur -----
 function remplirSelectCloner() {
   const select = document.getElementById("clonerSelectParent");
   if (!select) return;
@@ -1341,7 +1660,6 @@ function afficherApercuClone() {
 function executerClonage() {
   const parentId = document.getElementById("clonerSelectParent").value;
   const nouvelId = document.getElementById("clonerNouvelId").value.trim();
-
   if (!parentId) {
     showMessage("Veuillez sélectionner un compteur parent.", "error");
     return;
@@ -1354,10 +1672,8 @@ function executerClonage() {
     showMessage("Cet ID existe déjà.", "error");
     return;
   }
-
   const parent = tabCompteurs.find((c) => c.id_compteur === parentId);
   if (!parent) return;
-
   const clone = {
     ...parent,
     id_compteur: nouvelId,
@@ -1365,10 +1681,8 @@ function executerClonage() {
     visible_compteur: true,
     actif_compteur: true,
   };
-
   tabCompteurs.push(clone);
   localStorage.setItem("tabCompteurs", JSON.stringify(tabCompteurs));
-
   document.getElementById("clonerNouvelId").value = "";
   document.getElementById("clonerApercu").style.display = "none";
   remplirSelectCloner();
@@ -1377,7 +1691,6 @@ function executerClonage() {
   showMessage(`Compteur cloné : ${nouvelId}`);
 }
 
-// ----- Créer compteur -----
 function creerCompteur() {
   const id = document.getElementById("creerIdCompteur").value.trim();
   if (!id) {
@@ -1388,7 +1701,6 @@ function creerCompteur() {
     showMessage("Cet ID existe déjà.", "error");
     return;
   }
-
   const actif = document.getElementById("creerActif").checked;
   const nouveau = {
     id_compteur: id,
@@ -1411,10 +1723,8 @@ function creerCompteur() {
       ? new Date().toISOString().slice(0, 19).replace("T", " ")
       : "",
   };
-
   tabCompteurs.push(nouveau);
   localStorage.setItem("tabCompteurs", JSON.stringify(tabCompteurs));
-
   document.getElementById("creerIdCompteur").value = "";
   document.getElementById("creerNom").value = "";
   document.getElementById("creerUnite").value = "";
@@ -1427,7 +1737,6 @@ function creerCompteur() {
   document.getElementById("creerDescription").value = "";
   document.getElementById("creerVisible").checked = true;
   document.getElementById("creerActif").checked = true;
-
   remplirSelectModifier();
   remplirSelectCloner();
   fillCompteurSelect();
@@ -1435,7 +1744,6 @@ function creerCompteur() {
 }
 
 function setupGestionCompteurs() {
-  // Menu → sous-menus
   document
     .getElementById("goToActiverCompteur")
     ?.addEventListener("click", () => showPanel("activerCompteurPanel"));
@@ -1452,7 +1760,6 @@ function setupGestionCompteurs() {
     .getElementById("goToQrCodeCompteur")
     ?.addEventListener("click", () => showPanel("qrCodeCompteurPanel"));
 
-  // Retours ←
   document
     .getElementById("backFromCompteursMenu")
     ?.addEventListener("click", () => showPanel("releveForm"));
@@ -1472,12 +1779,9 @@ function setupGestionCompteurs() {
     .getElementById("backFromQrCode")
     ?.addEventListener("click", () => showPanel("gestionCompteursMenu"));
 
-  // Activer
   document
     .getElementById("enregistrerActiverBtn")
     ?.addEventListener("click", enregistrerActiver);
-
-  // Modifier
   document
     .getElementById("modifierSelectCompteur")
     ?.addEventListener("change", chargerCompteurDansFormModifier);
@@ -1487,8 +1791,6 @@ function setupGestionCompteurs() {
   document
     .getElementById("annulerModifier")
     ?.addEventListener("click", () => showPanel("gestionCompteursMenu"));
-
-  // Cloner
   document
     .getElementById("clonerSelectParent")
     ?.addEventListener("change", afficherApercuClone);
@@ -1498,8 +1800,6 @@ function setupGestionCompteurs() {
   document
     .getElementById("annulerCloner")
     ?.addEventListener("click", () => showPanel("gestionCompteursMenu"));
-
-  // Créer
   document
     .getElementById("executerCreerBtn")
     ?.addEventListener("click", creerCompteur);
@@ -1507,7 +1807,6 @@ function setupGestionCompteurs() {
     .getElementById("annulerCreer")
     ?.addEventListener("click", () => showPanel("gestionCompteursMenu"));
 
-  // ----- QR Code -----
   document
     .getElementById("qrSelectCompteur")
     ?.addEventListener("change", function () {
@@ -1515,29 +1814,21 @@ function setupGestionCompteurs() {
       const container = document.getElementById("qrCodeContainer");
       const svgDiv = document.getElementById("qrCodeSvg");
       const infos = document.getElementById("qrCodeInfos");
-
       if (!idCompteur) {
         container.style.display = "none";
         return;
       }
-
       const compteur = tabCompteurs.find((c) => c.id_compteur === idCompteur);
       if (!compteur) return;
-
       const typeNumber = 0;
       const errorCorrectionLevel = "L";
       const qr = qrcode(typeNumber, errorCorrectionLevel);
       qr.addData(idCompteur);
       qr.make();
-
       const moduleCount = qr.getModuleCount();
       const moduleSize = 20;
       const size = moduleCount * moduleSize;
-
-      // Calculer la taille physique pour impression 300 DPI (1px = 0.254mm à 96 DPI)
-      // Pour impression haute résolution, on garde les pixels mais on peut aussi indiquer la taille en mm
       const widthMm = ((size * 25.4) / 96).toFixed(1);
-
       let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="width: ${widthMm}mm; height: ${widthMm}mm; shape-rendering: crispEdges;">`;
       svg += `<rect width="${size}" height="${size}" fill="white"/>`;
       for (let row = 0; row < moduleCount; row++) {
@@ -1550,7 +1841,6 @@ function setupGestionCompteurs() {
         }
       }
       svg += `</svg>`;
-
       svgDiv.innerHTML = svg;
       infos.textContent = `ID: ${compteur.id_compteur} — ${compteur.nom_compteur}`;
       container.style.display = "block";
@@ -1562,13 +1852,10 @@ function setupGestionCompteurs() {
       const select = document.getElementById("qrSelectCompteur");
       const idCompteur = select.value;
       if (!idCompteur) return;
-
       const compteur = tabCompteurs.find((c) => c.id_compteur === idCompteur);
       if (!compteur) return;
-
       const svgElem = document.querySelector("#qrCodeSvg svg");
       if (!svgElem) return;
-
       const svgString = new XMLSerializer().serializeToString(svgElem);
       const blob = new Blob([svgString], { type: "image/svg+xml" });
       const url = URL.createObjectURL(blob);
@@ -1581,34 +1868,10 @@ function setupGestionCompteurs() {
       URL.revokeObjectURL(url);
     });
 
-  // Initialiser les listes déroulantes des formulaires
   fillSelectFromArray("creerSection", sections, "Sélectionner...");
   fillSelectFromArray("creerFamille", famille_list, "Sélectionner...");
   fillSelectFromArray("creerGroupe1", groupe1_list, "Sélectionner...");
   fillSelectFromArray("creerGroupe2", groupe2_list, "Sélectionner...");
-}
-
-// ============================================================
-// FORMULAIRE DE RELEVÉ
-// ============================================================
-
-function handleSubmit(event) {
-  event.preventDefault();
-  const id_ronde = document.getElementById("id_ronde").value;
-  const operateur = document.getElementById("operateur").value;
-  const compteur = document.getElementById("compteur").value;
-  const valeurActuelle = parseFloat(
-    document.getElementById("valeurActuelle").value,
-  );
-
-  if (!id_ronde || !operateur || !compteur || isNaN(valeurActuelle)) {
-    showMessage("Veuillez remplir tous les champs", "error");
-    return;
-  }
-
-  saveReleve(id_ronde, operateur, compteur, valeurActuelle);
-  showMessage("Relevé enregistré avec succès !");
-  document.getElementById("valeurActuelle").value = "";
 }
 
 function setupEventListeners() {
@@ -1618,7 +1881,7 @@ function setupEventListeners() {
 }
 
 // ============================================================
-// CHARGEMENT DES DONNÉES
+// CHARGEMENT DES DONNÉES ET INITIALISATION
 // ============================================================
 
 function loadSavedData() {
@@ -1632,34 +1895,17 @@ function loadSavedData() {
     famille_list = JSON.parse(localStorage.getItem("famille_list"));
     groupe1_list = JSON.parse(localStorage.getItem("groupe1_list"));
     groupe2_list = JSON.parse(localStorage.getItem("groupe2_list"));
-
     type_ronde = JSON.parse(hasTypeRonde);
     tabCompteurs = JSON.parse(hasTabCompteurs);
-
-    const parsed = JSON.parse(hasRondeDB);
-    for (const compteur in parsed) {
-      if (Array.isArray(parsed[compteur])) {
-        parsed[compteur] = parsed[compteur].map((releve) => {
-          const { consommation, ...cleanReleve } = releve;
-          if (cleanReleve.id_ronde === undefined) cleanReleve.id_ronde = 0;
-          return cleanReleve;
-        });
-      }
-    }
-    rondeDB = parsed;
+    rondeDB = JSON.parse(hasRondeDB);
   } else {
     initDatabase();
   }
 
   tabOperateurs = JSON.parse(localStorage.getItem("tabOperateurs"));
-
   fillRondeSelect();
   fillCompteurSelect();
 }
-
-// ============================================================
-// INITIALISATION
-// ============================================================
 
 function init() {
   loadSavedData();
@@ -1669,8 +1915,47 @@ function init() {
   setupGestionOperateurs();
   setupGestionRondes();
   setupGestionCompteurs();
+  setupChoixRonde();
 
-  // Reset lien en bas de page
+  document.getElementById("loginBtn").addEventListener("click", handleLogin);
+  document.getElementById("bypassLink").addEventListener("click", function (e) {
+    e.preventDefault();
+    bypassLogin();
+  });
+  document.getElementById("loginMdp").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleLogin();
+    }
+  });
+
+  document.getElementById("scanQrBtn").addEventListener("click", ouvrirScanner);
+  document
+    .getElementById("annulerScanBtn")
+    .addEventListener("click", actionAnnulerScan);
+  document
+    .getElementById("continuerScanBtn")
+    .addEventListener("click", actionContinuerScan);
+
+  document
+    .getElementById("confirmerRecapBtn")
+    .addEventListener("click", confirmerReleve);
+  document
+    .getElementById("annulerRecapBtn")
+    .addEventListener("click", annulerReleve);
+  document
+    .getElementById("continuerRondeBtn")
+    .addEventListener("click", continuerRonde);
+  document
+    .getElementById("finirRondeBtn")
+    .addEventListener("click", finirRonde);
+  document
+    .getElementById("finRondeFinBtn")
+    .addEventListener("click", finRondeFin);
+  document
+    .getElementById("finRondeNouvelleSessionBtn")
+    .addEventListener("click", finRondeNouvelleSession);
+
   document
     .getElementById("resetLinkFooter")
     ?.addEventListener("click", function (e) {
@@ -1687,6 +1972,9 @@ function init() {
         }
       }
     });
+
+  // Démarrer sur le panel de login
+  document.getElementById("loginPanel").style.display = "block";
 }
 
 init();
