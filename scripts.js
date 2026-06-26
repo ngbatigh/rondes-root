@@ -546,13 +546,19 @@ function initDatabase() {
   type_ronde = [
     {
       id_ronde: 0,
+      ronde: "Autre",
+      delai: "",
+      description_ronde: "Autres types de ronde",
+    },
+    {
+      id_ronde: 1,
       ronde: "Relevé journalier",
       delai: "1440",
       description_ronde:
         "relevé de tous les compteurs chaque matin aux alentours de 06:00",
     },
     {
-      id_ronde: 1,
+      id_ronde: 2,
       ronde: "Relevé de quart",
       delai: "480",
       description_ronde:
